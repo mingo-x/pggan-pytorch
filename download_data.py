@@ -48,5 +48,6 @@ if __name__ == '__main__':
         print('Deal with file: ' + filename)
         output_path = os.path.join(global_data_dir, filename)
         string = "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id={0}' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id={0}".format(drive_id)
-        output_info = subprocess.check_output(['wget', '--load-cookies', '/tmp/cookies.txt', string, '-O', output_path, '&&', 'rm', '-rf', '/tmp/cookies.txt'])
+        output_info = subprocess.check_output(['wget', '--load-cookies', '/tmp/cookies.txt', string, '-O', output_path])
+        subprocess.check_call(['rm', '-rf', '/tmp/cookies.txt'])
         print(output_info)
