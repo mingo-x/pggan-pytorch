@@ -70,7 +70,10 @@ if __name__ == '__main__':
         with open(tmp_confirm_file, 'w') as fout:
             fout.write(confirm.decode("utf-8"))
         parse_confirm = subprocess.check_output(['sed', '-rn', 's/.*confirm=([0-9A-Za-z_]+).*/\\1\\n/p', tmp_confirm_file])
-        parse_confirm = parse_confirm.decode('utf-8')[0:-1]
+        print(parse_confirm)
+        parse_confirm = parse_confirm.decode('utf-8')
+        if parse_confirm[-1] == '\n':
+            parse_confirm = parse_confirm[:-1]
         string = "https://docs.google.com/uc?export=download&confirm={0}&id={1}".format(parse_confirm, drive_id)
         output_info = subprocess.check_output(['wget', '--load-cookies', '/tmp/cookies.txt', string, '-O', output_path])
         subprocess.check_call(['rm', '-rf', '/tmp/cookies.txt'])
