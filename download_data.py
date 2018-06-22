@@ -49,11 +49,12 @@ if __name__ == '__main__':
         output_path = os.path.join(global_data_dir, filename)
         tmp_confirm_file = '/tmp/gdrive_confirm.txt'
         confirm = subprocess.check_output(['wget', '--quiet', '--save-cookies', '/tmp/cookies.txt', '--keep-session-cookies', '--no-check-certificate', 'https://docs.google.com/uc?export=download&id={}'.format(drive_id), '-O-'])
-        with open(output_path, 'w') as fout:
-            fout.write(confirm)
-        parse_confirm = subprocess.check_output(['sed', '-rn', 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p', tmp_confirm_file])
+        with open(tmp_confirm_file, 'w') as fout:
+            fout.write(confirm.decode("utf-8"))
+        parse_confirm = subprocess.check_output(['sed', '-rn', 's/.*confirm=([0-9A-Za-z_]+).*/\\1\\n/p', tmp_confirm_file])
+        parse_confirm = parse_confirm.decode('utf-8')[0:-1]
+        print(parse_confirm)
         string = "https://docs.google.com/uc?export=download&confirm={0}&id={1}".format(parse_confirm, drive_id)
         output_info = subprocess.check_output(['wget', '--load-cookies', '/tmp/cookies.txt', string, '-O', output_path])
         subprocess.check_call(['rm', '-rf', '/tmp/cookies.txt'])
         subprocess.check_call(['rm', '-rf', tmp_confirm_file])
-        print(output_info)
