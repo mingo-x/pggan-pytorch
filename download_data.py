@@ -48,7 +48,7 @@ if __name__ == '__main__':
         print('Deal with file: ' + filename)
         output_path = os.path.join(global_data_dir, filename)
         tmp_confirm_file = '/tmp/gdrive_confirm.txt'
-        confirm = subprocess.check_output(['wget', '--quiet', '--save-cookies', '/tmp/cookies.txt', '--keep-session-cookies', '--no-check-certificate', 'https://docs.google.com/uc?export=download&id={}'.format(drive_id), '-O-', '>', tmp_confirm_file])
+        subprocess.check_call(['wget', '--quiet', '--save-cookies', '/tmp/cookies.txt', '--keep-session-cookies', '--no-check-certificate', 'https://docs.google.com/uc?export=download&id={}'.format(drive_id), '-O-'])
         parse_confirm = subprocess.check_output(['sed', '-rn', 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p', tmp_confirm_file])
         string = "https://docs.google.com/uc?export=download&confirm={0}&id={1}".format(parse_confirm, drive_id)
         output_info = subprocess.check_output(['wget', '--load-cookies', '/tmp/cookies.txt', string, '-O', output_path])
