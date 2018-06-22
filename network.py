@@ -93,7 +93,7 @@ class Generator(nn.Module):
         ndim = self.ngf
         if resl==3 or resl==4 or resl==5:
             halving = False
-            ndim = self.ngf
+            # ndim = self.ngf
         elif resl==6 or resl==7 or resl==8 or resl==9 or resl==10:
             halving = True
             for i in range(int(resl)-5):
@@ -133,7 +133,7 @@ class Generator(nn.Module):
                 new_model[-1].load_state_dict(module.state_dict())      # copy pretrained weights
             
         if resl >= 3 and resl <= 9:
-            print 'growing network[{}x{} to {}x{}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl-1)), int(pow(2,resl)), int(pow(2,resl)))
+            print 'growing network[{0}x{0} to {1}x{1}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl)))
             low_resl_to_rgb = deepcopy_module(self.model, 'to_rgb_block')
             prev_block = nn.Sequential()
             prev_block.add_module('low_resl_upsample', nn.Upsample(scale_factor=2, mode='nearest'))
