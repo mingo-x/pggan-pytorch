@@ -255,7 +255,7 @@ class trainer:
         disc_interpolates = self.D(interpolates)
 
         gradients = grad(outputs=disc_interpolates, inputs=interpolates,
-            grad_outputs=torch.ones(disc_interpolates.size()).cuda(gpu) if use_cuda else torch.ones(
+            grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
                 disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
         gradients = gradients.view(gradients.size(0), -1)
 
