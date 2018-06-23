@@ -237,12 +237,16 @@ class trainer:
         z = Variable(torch.from_numpy(z)).cuda() if self.use_cuda else Variable(torch.from_numpy(z))
         return x + z
 
+    def mul_rowwise(self, a, b):
+        s = a.size()
+        return (a.view(s[0], -1) * b).view(s)
+
     def calc_gradient_penalty(self, real_data, fake_data, iwass_lambda):
         alpha = torch.FloatTensor(real_data.size(0), 1)
         alpha.uniform_()
         alpha = alpha.cuda() if self.use_cuda else alpha
 
-        interpolates = alpha * real_data + ((1 - alpha) * fake_data)
+        interpolates = self.mul_rowwise(real_data, 1-alpha) + self.mul_rowwise(fake_data, alpha)
 
         if self.use_cuda:
             interpolates = interpolates.cuda()
