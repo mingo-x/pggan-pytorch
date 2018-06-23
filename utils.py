@@ -21,7 +21,7 @@ def adjust_dyn_range(x, drange_in, drange_out):
 def resize(x, size):
     transform = transforms.Compose([
         transforms.ToPILImage(),
-        transforms.Scale(size),
+        transforms.Resize(size),
         transforms.ToTensor(),
         ])
     return transform(x)
