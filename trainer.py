@@ -238,9 +238,9 @@ class trainer:
         return x + z
 
     def calc_gradient_penalty(self, real_data, fake_data, iwass_lambda):
-        alpha = torch.cuda.FloatTensor(real_data.size(0), 1)
+        alpha = torch.FloatTensor(real_data.size(0), 1)
         alpha.uniform_()
-        alpha = alpha.cuda(gpu) if use_cuda else alpha
+        alpha = alpha.cuda() if use_cuda else alpha
 
         interpolates = alpha * real_data + ((1 - alpha) * fake_data)
 
