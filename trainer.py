@@ -228,7 +228,7 @@ class trainer:
             return x
 
         if hasattr(self, '_d_'):
-            self._d_ = self._d_ * 0.9 + torch.mean(self.fx_tilde).data[0] * 0.1
+            self._d_ = self._d_ * 0.9 + torch.mean(self.fx_tilde).data.item() * 0.1
         else:
             self._d_ = 0.0
         strength = 0.2 * max(0, self._d_ - 0.5)**2
