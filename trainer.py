@@ -296,7 +296,7 @@ class trainer:
                 self.fx_tilde = self.D(self.x_tilde.detach())
                 if self.flag_wgan:
                     loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
-                    loss_d_fake = fx_tilde
+                    loss_d_fake = self.fx_tilde
                     gp = calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
                     loss_d = torch.mean(loss_d_real + loss_d_fake + gp)
                 else:
