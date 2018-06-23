@@ -41,6 +41,7 @@ parser.add_argument('--flag_sigmoid', type=bool, default=False)     # use of sig
 parser.add_argument('--flag_add_noise', type=bool, default=True)    # add noise to the real image(x)
 parser.add_argument('--flag_norm_latent', type=bool, default=False) # pixelwise normalization of latent vector (z)
 parser.add_argument('--flag_add_drift', type=bool, default=True)   # add drift loss
+parser.add_argument('--flag_wgan', type=bool, default=True)   # use wgan loss
 
 
 

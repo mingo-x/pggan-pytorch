@@ -46,6 +46,7 @@ class trainer:
         self.flag_flush_dis = False
         self.flag_add_noise = self.config.flag_add_noise
         self.flag_add_drift = self.config.flag_add_drift
+        self.flag_wgan = self.config.flag_wgan
         
         # network and cirterion
         self.G = net.Generator(config)
@@ -236,6 +237,28 @@ class trainer:
         z = Variable(torch.from_numpy(z)).cuda() if self.use_cuda else Variable(torch.from_numpy(z))
         return x + z
 
+    def calc_gradient_penalty(self, real_data, fake_data, iwass_lambda):
+        alpha = torch.cuda.FloatTensor(real_data.size(0), 1)
+        alpha.uniform_()
+        alpha = alpha.cuda(gpu) if use_cuda else alpha
+
+        interpolates = alpha * real_data + ((1 - alpha) * fake_data)
+
+        if use_cuda:
+            interpolates = interpolates.cuda(gpu)
+        interpolates = autograd.Variable(interpolates, requires_grad=True)
+
+        disc_interpolates = self.D(interpolates)
+
+        gradients = autograd.grad(outputs=disc_interpolates, inputs=interpolates,
+                                  grad_outputs=torch.ones(disc_interpolates.size()).cuda(gpu) if use_cuda else torch.ones(
+                                      disc_interpolates.size()),
+                                  create_graph=True, retain_graph=True, only_inputs=True)[0]
+        gradients = gradients.view(gradients.size(0), -1)
+
+        gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * iwass_lambda
+        return gradient_penalty
+
 
     def train(self):
         # noise for test.
@@ -271,14 +294,23 @@ class trainer:
                
                 self.fx = self.D(self.x)
                 self.fx_tilde = self.D(self.x_tilde.detach())
-                loss_d = self.mse(self.fx, self.real_label) + self.mse(self.fx_tilde, self.fake_label)
+                if self.flag_wgan:
+                    loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
+                    loss_d_fake = fx_tilde
+                    gp = calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
+                    loss_d = torch.mean(loss_d_real + loss_d_fake + gp)
+                else:
+                    loss_d = self.mse(self.fx, self.real_label) + self.mse(self.fx_tilde, self.fake_label)
 
                 loss_d.backward()
                 self.opt_d.step()
 
                 # update generator.
                 fx_tilde = self.D(self.x_tilde)
-                loss_g = self.mse(fx_tilde, self.real_label.detach())
+                if self.flag_wgan:
+                    loss_g = -torch.mean(fx_tilde)
+                else:
+                    loss_g = self.mse(fx_tilde, self.real_label.detach())
                 loss_g.backward()
                 self.opt_g.step()
 
