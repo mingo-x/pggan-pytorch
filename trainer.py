@@ -5,7 +5,7 @@ from math import floor, ceil
 import os, sys
 import torch
 import torchvision.transforms as transforms
-from torch.autograd import Variable
+from torch.autograd import Variable, grad
 from torch.optim import Adam
 from tqdm import tqdm
 import tf_recorder as tensorboard
@@ -240,20 +240,19 @@ class trainer:
     def calc_gradient_penalty(self, real_data, fake_data, iwass_lambda):
         alpha = torch.FloatTensor(real_data.size(0), 1)
         alpha.uniform_()
-        alpha = alpha.cuda() if use_cuda else alpha
+        alpha = alpha.cuda() if self.use_cuda else alpha
 
         interpolates = alpha * real_data + ((1 - alpha) * fake_data)
 
-        if use_cuda:
-            interpolates = interpolates.cuda(gpu)
-        interpolates = autograd.Variable(interpolates, requires_grad=True)
+        if self.use_cuda:
+            interpolates = interpolates.cuda()
+        interpolates = Variable(interpolates)
 
         disc_interpolates = self.D(interpolates)
 
-        gradients = autograd.grad(outputs=disc_interpolates, inputs=interpolates,
-                                  grad_outputs=torch.ones(disc_interpolates.size()).cuda(gpu) if use_cuda else torch.ones(
-                                      disc_interpolates.size()),
-                                  create_graph=True, retain_graph=True, only_inputs=True)[0]
+        gradients = grad(outputs=disc_interpolates, inputs=interpolates,
+            grad_outputs=torch.ones(disc_interpolates.size()).cuda(gpu) if use_cuda else torch.ones(
+                disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
         gradients = gradients.view(gradients.size(0), -1)
 
         gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * iwass_lambda
