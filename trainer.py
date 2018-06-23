@@ -250,7 +250,7 @@ class trainer:
 
         if self.use_cuda:
             interpolates = interpolates.cuda()
-        interpolates = Variable(interpolates)
+        interpolates = Variable(interpolates, requires_grad=True)
 
         disc_interpolates = self.D(interpolates)
 
