@@ -31,7 +31,7 @@ class HDF5Exporter:
         self.h5_lods = []
         self.buffers = []
         self.buffer_sizes = []
-        for lod in xrange(rlog2, -1, -1):
+        for lod in xrange(rlog2, rlog2-1, -1):
             r = 2 ** lod; c = channels
             bytes_per_item = c * (r ** 2)
             chunk_size = int(np.ceil(128.0 / bytes_per_item))
@@ -41,6 +41,7 @@ class HDF5Exporter:
             self.h5_lods.append(lod)
             self.buffers.append(np.zeros((buffer_size,c,r,r), dtype=np.uint8))
             self.buffer_sizes.append(0)
+        print(self.h5_lods)
 
     def close(self):
         for lod in xrange(len(self.h5_lods)):
