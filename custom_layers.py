@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 from PIL import Image
 import copy
-from torch.nn.init import kaiming_normal, calculate_gain
+from torch.nn.init import kaiming_normal_, calculate_gain
 
 # same function as ConcatTable container in Torch7.
 class ConcatTable(nn.Module):
@@ -101,7 +101,7 @@ class equalized_conv2d(nn.Module):
     def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming', bias=False):
         super(equalized_conv2d, self).__init__()
         self.conv = nn.Conv2d(c_in, c_out, k_size, stride, pad, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.conv.weight, a=calculate_gain('conv2d'))
+        if initializer == 'kaiming':    kaiming_normal_(self.conv.weight, a=calculate_gain('conv2d'))
         elif initializer == 'xavier':   xavier_normal(self.conv.weight)
         
         conv_w = self.conv.weight.data.clone()
@@ -118,7 +118,7 @@ class equalized_deconv2d(nn.Module):
     def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming'):
         super(equalized_deconv2d, self).__init__()
         self.deconv = nn.ConvTranspose2d(c_in, c_out, k_size, stride, pad, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.deconv.weight, a=calculate_gain('conv2d'))
+        if initializer == 'kaiming':    kaiming_normal_(self.deconv.weight, a=calculate_gain('conv2d'))
         elif initializer == 'xavier':   xavier_normal(self.deconv.weight)
         
         deconv_w = self.deconv.weight.data.clone()
@@ -134,7 +134,7 @@ class equalized_linear(nn.Module):
     def __init__(self, c_in, c_out, initializer='kaiming'):
         super(equalized_linear, self).__init__()
         self.linear = nn.Linear(c_in, c_out, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=calculate_gain('linear'))
+        if initializer == 'kaiming':    kaiming_normal_(self.linear.weight, a=calculate_gain('linear'))
         elif initializer == 'xavier':   torch.nn.init.xavier_normal(self.linear.weight)
         
         linear_w = self.linear.weight.data.clone()

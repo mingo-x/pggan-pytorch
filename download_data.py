@@ -70,7 +70,6 @@ if __name__ == '__main__':
         with open(tmp_confirm_file, 'w') as fout:
             fout.write(confirm.decode("utf-8"))
         parse_confirm = subprocess.check_output(['sed', '-rn', 's/.*confirm=([0-9A-Za-z_]+).*/\\1\\n/p', tmp_confirm_file])
-        print(parse_confirm)
         parse_confirm = parse_confirm.decode('utf-8')
         if parse_confirm[-1] == '\n':
             parse_confirm = parse_confirm[:-1]

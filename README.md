@@ -28,7 +28,7 @@ The training data folder should look like :
 
 __[step 2.] Prepare environment using virtualenv__   
   + you can easily set PyTorch (v0.3) and TensorFlow environment using virtualenv.
-  + CAUTION: if you have trouble installing PyTorch, install it mansually using pip. [[PyTorch Install]](http://pytorch.org/)
+  + CAUTION: if you have trouble installing PyTorch, install it manually using pip. [[PyTorch Install]](http://pytorch.org/)
   
   ~~~
   $ virtualenv --python=python2.7 venv
