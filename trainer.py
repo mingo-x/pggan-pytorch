@@ -171,8 +171,8 @@ class trainer:
         self.z = torch.FloatTensor(self.loader.batchsize, self.nz)
         self.x = torch.FloatTensor(self.loader.batchsize, 3, self.loader.imsize, self.loader.imsize)
         self.x_tilde = torch.FloatTensor(self.loader.batchsize, 3, self.loader.imsize, self.loader.imsize)
-        self.real_label = torch.FloatTensor(self.loader.batchsize).fill_(1)
-        self.fake_label = torch.FloatTensor(self.loader.batchsize).fill_(0)
+        self.real_label = torch.FloatTensor(self.loader.batchsize, 1).fill_(1)
+        self.fake_label = torch.FloatTensor(self.loader.batchsize, 1).fill_(0)
 
         # enable cuda
         if self.use_cuda:
