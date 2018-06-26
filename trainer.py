@@ -19,6 +19,7 @@ class trainer:
         if torch.cuda.is_available():
             self.use_cuda = True
             torch.set_default_tensor_type('torch.cuda.FloatTensor')
+            print('Using GPU.')
         else:
             self.use_cuda = False
             torch.set_default_tensor_type('torch.FloatTensor')
