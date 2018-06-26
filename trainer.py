@@ -246,12 +246,10 @@ class trainer:
         alpha.uniform_()
         alpha = alpha.cuda() if self.use_cuda else alpha
 
-        interpolates = self.mul_rowwise(real_data, 1-alpha) + self.mul_rowwise(fake_data, alpha)
+        interpolates = self.mul_rowwise(real_data.data, 1-alpha) + self.mul_rowwise(fake_data.data, alpha)
 
         if self.use_cuda:
             interpolates = interpolates.cuda()
-            real_data = real_data.cuda()
-            fake_data = fake_data.cuda()
         interpolates = Variable(interpolates, requires_grad=True)
 
         disc_interpolates = self.D(interpolates)
@@ -320,7 +318,7 @@ class trainer:
                 self.opt_g.step()
 
                 # logging.
-                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data.item(), loss_g.data.item(), self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr)
+                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr)
                 tqdm.write(log_msg)
 
                 # save model.
@@ -338,8 +336,8 @@ class trainer:
                 # tensorboard visualization.
                 if self.use_tb:
                     x_test = self.G(self.z_test)
-                    self.tb.add_scalar('data/loss_g', loss_g.data.item(), self.globalIter)
-                    self.tb.add_scalar('data/loss_d', loss_d.data.item(), self.globalIter)
+                    self.tb.add_scalar('data/loss_g', loss_g.data[0], self.globalIter)
+                    self.tb.add_scalar('data/loss_d', loss_d.data[0], self.globalIter)
                     self.tb.add_scalar('tick/lr', self.lr, self.globalIter)
                     self.tb.add_scalar('tick/cur_resl', int(pow(2,floor(self.resl))), self.globalIter)
                     self.tb.add_image_grid('grid/x_test', 4, utils.adjust_dyn_range(x_test.data.float(), [-1,1], [0,1]), self.globalIter)
