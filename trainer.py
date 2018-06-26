@@ -268,8 +268,7 @@ class trainer:
         self.z_test = torch.FloatTensor(self.loader.batchsize, self.nz)
         if self.use_cuda:
             self.z_test = self.z_test.cuda()
-        with torch.no_grad():
-            self.z_test = Variable(self.z_test)
+        self.z_test = Variable(self.z_test, volatile=True)
         self.z_test.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
         
         
