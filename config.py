@@ -38,7 +38,7 @@ parser.add_argument('--flag_gdrop', type=bool, default=True)        # use of gen
 parser.add_argument('--flag_leaky', type=bool, default=True)        # use of leaky relu instead of relu.
 parser.add_argument('--flag_tanh', type=bool, default=False)        # use of tanh at the end of the generator.
 parser.add_argument('--flag_sigmoid', type=bool, default=False)     # use of sigmoid at the end of the discriminator.
-parser.add_argument('--flag_add_noise', type=bool, default=True)    # add noise to the real image(x)
+parser.add_argument('--flag_add_noise', type=bool, default=False)    # add noise to the real image(x)
 parser.add_argument('--flag_norm_latent', type=bool, default=False) # pixelwise normalization of latent vector (z)
 parser.add_argument('--flag_add_drift', type=bool, default=True)   # add drift loss
 parser.add_argument('--flag_wgan', type=bool, default=True)   # use wgan loss
