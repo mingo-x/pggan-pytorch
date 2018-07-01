@@ -83,7 +83,7 @@ class Generator(nn.Module):
         if self.gen_ckpt != '' and self.dis_ckpt != '':
             pattern = '{}gen_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.gen_ckpt)
-            resl = parsed[0]
+            resl = int(parsed[0])
             gen_ckpt = torch.load(self.gen_ckpt)
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
@@ -240,7 +240,7 @@ class Discriminator(nn.Module):
         if self.gen_ckpt != '' and self.dis_ckpt != '':
             pattern = '{}dis_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.dis_ckpt)
-            resl = parsed[0]
+            resl = int(parsed[0])
             dis_ckpt = torch.load(self.dis_ckpt)
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
