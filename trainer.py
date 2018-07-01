@@ -88,6 +88,9 @@ class trainer:
             gen_ckpt = torch.load(self.gen_ckpt)
             dis_ckpt = torch.load(self.dis_ckpt)
             self.resl = gen_ckpt['resl']
+            self.G.module.load_state_dict(gen_ckpt['state_dict'])
+            self.D.module.load_state_dict(dis_ckpt['state_dict'])
+            print('Model weights restored.')
             self.opt_d.load_state_dict(dis_ckpt['optimizer'])
             self.opt_g.load_state_dict(gen_ckpt['optimizer'])
             print('Optimizer restored.')

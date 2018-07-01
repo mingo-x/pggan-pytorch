@@ -84,17 +84,8 @@ class Generator(nn.Module):
             pattern = '{}gen_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.gen_ckpt)
             resl = int(parsed[1])
-            gen_ckpt = torch.load(self.gen_ckpt)
             for r in xrange(3, resl):
-                self.grow_network_without_fadein(r)
-            print(self.model)
-            for k in self.model.state_dict():
-                print(k)
-            for k in gen_ckpt['state_dict']:
-                print(k)
-            self.module.load_state_dict(gen_ckpt['state_dict'])   
-            gen_ckpt = None  
-
+                self.grow_network_without_fadein(r) 
 
     def first_block(self):
         layers = []
@@ -246,11 +237,8 @@ class Discriminator(nn.Module):
             pattern = '{}dis_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.dis_ckpt)
             resl = int(parsed[1])
-            dis_ckpt = torch.load(self.dis_ckpt)
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
-            self.module.load_state_dict(dis_ckpt['state_dict'])  
-            dis_ckpt = None 
 
     def last_block(self):
         # add minibatch_std_concat_layer later.
