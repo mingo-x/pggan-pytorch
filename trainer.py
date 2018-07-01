@@ -74,7 +74,7 @@ class trainer:
         self.dis_ckpt = config.dis_ckpt
         if self.gen_ckpt != '' and self.dis_ckpt != '':
             pattern = 'gen_R{}_T{}.pth.tar'
-            parsed = self.gen_ckpt.parse(pattern)
+            parsed = parse(pattern, self.gen_ckpt)
             restore_resl = parsed[0]
             restore_tick = parsed[1]
             print("Restored resolution", restore_resl, "Restored global tick", restore_tick)
