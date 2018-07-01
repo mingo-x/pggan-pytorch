@@ -99,18 +99,18 @@ class trainer:
 
         # update alpha if fade-in layer exist.
         if self.fadein['gen'] is not None:
-            if self.resl%1.0 < (self.trns_tick)*delta:
+            if self.resl%1.0 < (self.trns_tick)*delta:  # [0, 0.25)
                 self.fadein['gen'].update_alpha(d_alpha)
                 self.complete['gen'] = self.fadein['gen'].alpha*100
                 self.phase = 'gtrns'
-            elif self.resl%1.0 >= (self.trns_tick)*delta and self.resl%1.0 < (self.trns_tick+self.stab_tick)*delta:
+            elif self.resl%1.0 >= (self.trns_tick)*delta and self.resl%1.0 < (self.trns_tick+self.stab_tick)*delta:  # [0.25, 0.5)
                 self.phase = 'gstab'
         if self.fadein['dis'] is not None:
-            if self.resl%1.0 >= (self.trns_tick+self.stab_tick)*delta and self.resl%1.0 < (self.stab_tick + self.trns_tick*2)*delta:
+            if self.resl%1.0 >= (self.trns_tick+self.stab_tick)*delta and self.resl%1.0 < (self.stab_tick + self.trns_tick*2)*delta:  # [0.5, 0.75)
                 self.fadein['dis'].update_alpha(d_alpha)
                 self.complete['dis'] = self.fadein['dis'].alpha*100
                 self.phase = 'dtrns'
-            elif self.resl%1.0 >= (self.stab_tick + self.trns_tick*2)*delta and self.phase!='final':
+            elif self.resl%1.0 >= (self.stab_tick + self.trns_tick*2)*delta and self.phase!='final':  # [0.75, 1.0]
                 self.phase = 'dstab'
             
         prev_kimgs = self.kimgs
