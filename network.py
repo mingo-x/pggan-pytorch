@@ -87,7 +87,8 @@ class Generator(nn.Module):
             gen_ckpt = torch.load(self.gen_ckpt)
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
-            self.model.load_state_dict(gen_ckpt['state_dict'])   
+
+            self.module.load_state_dict(gen_ckpt['state_dict'])   
             gen_ckpt = None  
 
 
@@ -244,7 +245,7 @@ class Discriminator(nn.Module):
             dis_ckpt = torch.load(self.dis_ckpt)
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
-            self.model.load_state_dict(dis_ckpt['state_dict'])  
+            self.module.load_state_dict(dis_ckpt['state_dict'])  
             dis_ckpt = None 
 
     def last_block(self):
