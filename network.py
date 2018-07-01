@@ -44,13 +44,6 @@ def deepcopy_module(module, target):
             new_module[-1].load_state_dict(m.state_dict())         # copy weights
     return new_module
 
-def shallowcopy_module(module, target):
-    new_module = nn.Sequential()
-    for name, m in module.named_children():
-        if name == target:
-            new_module.add_module(name, m)                          # make new structure
-    return new_module
-
 def soft_copy_param(target_link, source_link, tau):
     ''' soft-copy parameters of a link to another link. '''
     target_params = dict(target_link.named_parameters())
@@ -80,10 +73,11 @@ class Generator(nn.Module):
         self.nc = config.nc
         self.nz = config.nz
         self.ngf = config.ngf
+        self.restore_resl = config.restore_resl
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_gen()
-        self.restore_resl = config.restore_resl
+        
 
 
     def first_block(self):
@@ -130,6 +124,7 @@ class Generator(nn.Module):
         model.add_module('to_rgb_block', self.to_rgb_block(ndim))
         self.module_names = get_module_names(model)
 
+        # TODO: Load weights from checkpoint.
         if self.restore_resl != 1:
             for r in xrange(3, self.restore_resl+1):
                 self.grow_network_without_fadein(r)
@@ -231,6 +226,7 @@ class Discriminator(nn.Module):
         self.nz = config.nz
         self.nc = config.nc
         self.ndf = config.ndf
+        self.restore_resl = config.restore_resl
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_dis()
