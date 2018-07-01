@@ -27,7 +27,7 @@ class trainer:
         self.nz = config.nz
         self.optimizer = config.optimizer
 
-        self.resl = max(2, config.restore_resl)          # we start from 2^2 = 4
+        self.resl = 2         # we start from 2^2 = 4
         self.lr = config.lr
         self.eps_drift = config.eps_drift
         self.smoothing = config.smoothing
@@ -70,9 +70,22 @@ class trainer:
                 self.G = torch.nn.DataParallel(self.G, device_ids=gpus).cuda()
                 self.D = torch.nn.DataParallel(self.D, device_ids=gpus).cuda()  
 
-        
+        self.gen_ckpt = config.gen_ckpt
+        self.dis_ckpt = config.dis_ckpt
+        if self.gen_ckpt != '' and self.dis_ckpt != '':
+            pattern = 'gen_R{}_T{}.pth.tar'
+            parsed = self.gen_ckpt.parse(pattern)
+            restore_resl = parsed[0]
+            restore_tick = parsed[1]
+            print("Restored resolution", restore_resl, "Restored global tick", restore_tick)
+            self.resl = restore_resl
+            self.globalTick = restore_tick
+
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
+        if self.gen_ckpt != '' and self.dis_ckpt != '':
+            self.globalIter = floor(self.globalTick * self.TICK / self.loader.batchsize)
+
         
         # tensorboard
         self.use_tb = config.use_tb
@@ -278,9 +291,11 @@ class trainer:
         for step in range(2, self.max_resl+1+5):  # +1+5?
             if self.phase == 'init':
                 total_tick = self.trns_tick+self.stab_tick
+                start_tick = self.globalTick + 1
             else:
                 total_tick = self.trns_tick*2 + self.stab_tick * 2
-            for iter in tqdm(range(0,(total_tick)*self.TICK, self.loader.batchsize)):
+                start_tick = 0
+            for iter in tqdm(range(start_tick ,(total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
                 if self.stack > ceil(len(self.loader.dataset)):

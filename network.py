@@ -73,15 +73,18 @@ class Generator(nn.Module):
         self.nc = config.nc
         self.nz = config.nz
         self.ngf = config.ngf
-        self.restore_resl = config.restore_resl
+        self.gen_ckpt = config.gen_ckpt
+        self.dis_ckpt = config.dis_ckpt
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_gen()
-        # TODO: Load weights from checkpoint.
-        if self.restore_resl != 1:
-            for r in xrange(3, self.restore_resl+1):
+
+        if self.gen_ckpt != '' and self.dis_ckpt != '':
+            gen_ckpt = torch.load(self.gen_ckpt)
+            resl = gen_ckpt['resl']
+            for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
-        
+            self.model.load_state_dict(gen_ckpt['state_dict'])     
 
 
     def first_block(self):
@@ -224,13 +227,18 @@ class Discriminator(nn.Module):
         self.nz = config.nz
         self.nc = config.nc
         self.ndf = config.ndf
-        self.restore_resl = config.restore_resl
+        self.gen_ckpt = config.gen_ckpt
+        self.dis_ckpt = config.dis_ckpt
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_dis()
-        if self.restore_resl != 1:
-            for r in xrange(3, self.restore_resl+1):
+
+        if self.gen_ckpt != '' and self.dis_ckpt != '':
+            dis_ckpt = torch.load(self.dis_ckpt)
+            resl = gen_ckpt['resl']
+            for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
+            self.model.load_state_dict(dis_ckpt['state_dict'])   
 
     def last_block(self):
         # add minibatch_std_concat_layer later.
