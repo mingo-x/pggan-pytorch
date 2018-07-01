@@ -94,7 +94,10 @@ class trainer:
             self.stab_tick = self.config.stab_tick
         
         self.batchsize = self.loader.batchsize
-        delta = 1.0/(2*self.trns_tick+2*self.stab_tick)
+        if self.phase == 'init':
+            delta = 1.0/(self.trns_tick+self.stab_tick)
+        else:    
+            delta = 1.0/(2*self.trns_tick+2*self.stab_tick)
         d_alpha = 1.0*self.batchsize/self.trns_tick/self.TICK
 
         # update alpha if fade-in layer exist.
@@ -150,7 +153,6 @@ class trainer:
             if floor(self.resl) != prev_resl and floor(self.resl)<self.max_resl+1:
                 self.lr = self.lr * float(self.config.lr_decay)
                 self.G.module.grow_network(floor(self.resl))
-                #self.Gs.module.grow_network(floor(self.resl))
                 self.D.module.grow_network(floor(self.resl))
                 self.renew_everything()
                 self.fadein['gen'] = self.G.module.model.fadein_block
@@ -274,7 +276,11 @@ class trainer:
         
         
         for step in range(2, self.max_resl+1+5):  # +1+5?
-            for iter in tqdm(range(0,(self.trns_tick*2+self.stab_tick*2)*self.TICK, self.loader.batchsize)):
+            if self.phase == 'init':
+                total_tick = self.trns_tick+self.stab_tick
+            else:
+                total_tick = self.trns_tick*2 + self.stab_tick * 2
+            for iter in tqdm(range(0,(total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
                 if self.stack > ceil(len(self.loader.dataset)):
@@ -369,7 +375,7 @@ class trainer:
         ndis = 'dis_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
         ngen = 'gen_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
         if self.globalTick%50==0:
-            if self.phase == 'gstab' or self.phase =='dstab' or self.phase == 'final':
+            if self.phase == 'gstab' or self.phase =='dstab' or self.phase == 'final' or self.phase == 'init':
                 save_path = os.path.join(path, ndis)
                 if not os.path.exists(save_path):
                     torch.save(self.get_state('dis'), save_path)
