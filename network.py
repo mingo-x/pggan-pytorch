@@ -87,9 +87,10 @@ class Generator(nn.Module):
             gen_ckpt = torch.load(self.gen_ckpt)
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
-
             print(self.model)
-            for k, v in gen_ckpt['state_dict']:
+            for k in self.model.state_dict():
+                print(k)
+            for k in gen_ckpt['state_dict']:
                 print(k)
             self.module.load_state_dict(gen_ckpt['state_dict'])   
             gen_ckpt = None  
