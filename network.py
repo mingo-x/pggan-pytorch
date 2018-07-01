@@ -36,13 +36,19 @@ def linear(layers, c_in, c_out, sig=True, wn=False):
     if sig:     layers.append(nn.Sigmoid())
     return layers
 
-    
 def deepcopy_module(module, target):
     new_module = nn.Sequential()
     for name, m in module.named_children():
         if name == target:
             new_module.add_module(name, m)                          # make new structure and,
             new_module[-1].load_state_dict(m.state_dict())         # copy weights
+    return new_module
+
+def shallowcopy_module(module, target):
+    new_module = nn.Sequential()
+    for name, m in module.named_children():
+        if name == target:
+            new_module.add_module(name, m)                          # make new structure
     return new_module
 
 def soft_copy_param(target_link, source_link, tau):
@@ -77,6 +83,8 @@ class Generator(nn.Module):
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_gen()
+        self.restore_resl = config.restore_resl
+
 
     def first_block(self):
         layers = []
@@ -121,6 +129,11 @@ class Generator(nn.Module):
         model.add_module('first_block', first_block)
         model.add_module('to_rgb_block', self.to_rgb_block(ndim))
         self.module_names = get_module_names(model)
+
+        if self.restore_resl != 1:
+            for r in xrange(3, self.restore_resl+1):
+                self.grow_network_without_fadein(r)
+
         return model
     
     def grow_network(self, resl):
@@ -146,6 +159,24 @@ class Generator(nn.Module):
 
             new_model.add_module('concat_block', ConcatTable(prev_block, next_block))
             new_model.add_module('fadein_block', fadein_layer(self.config))
+            self.model = None
+            self.model = new_model
+            self.module_names = get_module_names(self.model)
+
+
+    def grow_network_without_fadein(self, resl):
+        '''Grow the network without fade-in structure, in order to resume saved model.'''
+        new_model = nn.Sequential()
+        names = get_module_names(self.model)
+        for name, module in self.model.named_children():
+            if not name=='to_rgb_block':
+                new_model.add_module(name, module)  # Make new structure.
+            
+        if resl >= 3 and resl <= 9:
+            print 'growing network[{0}x{0} to {1}x{1}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl)))
+            inter_block, ndim, self.layer_name = self.intermediate_block(resl)
+            new_model.add_module(self.layer_name, inter_block)
+            new_model.add_module('to_rgb_block', self.to_rgb_block(ndim))
             self.model = None
             self.model = new_model
             self.module_names = get_module_names(self.model)
@@ -248,6 +279,11 @@ class Discriminator(nn.Module):
         model.add_module('from_rgb_block', self.from_rgb_block(ndim))
         model.add_module('last_block', last_block)
         self.module_names = get_module_names(model)
+
+        if self.restore_resl != 1:
+            for r in xrange(3, self.restore_resl+1):
+                self.grow_network_without_fadein(r)
+
         return model
     
 
@@ -278,6 +314,25 @@ class Discriminator(nn.Module):
             self.model = None
             self.model = new_model
             self.module_names = get_module_names(self.model)
+
+
+    def grow_network_without_fadein(self, resl):
+        if resl >= 3 and resl <= 9:  # Why not 10?
+            print 'growing network[{}x{} to {}x{}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl-1)), int(pow(2,resl)), int(pow(2,resl)))
+            inter_block, ndim, self.layer_name = self.intermediate_block(resl)
+            new_model = nn.Sequential()
+            new_model.add_module('from_rgb_block', self.from_rgb_block(ndim))
+            new_model.add_module(self.layer_name, inter_block)
+
+            # we make new network since pytorch does not support remove_module()
+            names = get_module_names(self.model)
+            for name, module in self.model.named_children():
+                if not name=='from_rgb_block':
+                    new_model.add_module(name, module)                      # make new structure and
+            self.model = None
+            self.model = new_model
+            self.module_names = get_module_names(self.model)
+
 
     def flush_network(self):
         try:

@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser('PGGAN')
 parser.add_argument('--train_data_root', type=str, default='/home/xieya/sample_data')
 parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
-
+parser.add_argument('--restore_resl', type=int, default=1)  
 
 
 
