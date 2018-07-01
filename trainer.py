@@ -19,7 +19,7 @@ class trainer:
         if torch.cuda.is_available():
             self.use_cuda = True
             torch.set_default_tensor_type('torch.cuda.FloatTensor')
-            print('Using GPU.')
+            tqdm.write('Using GPU.')
         else:
             self.use_cuda = False
             torch.set_default_tensor_type('torch.FloatTensor')
@@ -85,6 +85,14 @@ class trainer:
         self.renew_everything()
         if self.gen_ckpt != '' and self.dis_ckpt != '':
             self.globalIter = floor(self.globalTick * self.TICK / self.loader.batchsize)
+            gen_ckpt = torch.load(self.gen_ckpt)
+            dis_ckpt = torch.load(self.dis_ckpt)
+            self.resl = gen_ckpt['resl']
+            self.opt_d.load_state_dict(dis_ckpt['optimizer'])
+            self.opt_g.load_state_dict(gen_ckpt['optimizer'])
+            print('Optimizer restored.')
+            gen_ckpt = None
+            dis_ckpt = None
 
         
         # tensorboard
@@ -108,7 +116,7 @@ class trainer:
         
         self.batchsize = self.loader.batchsize
         if self.phase == 'init':
-            delta = 1.0/(self.trns_tick+self.stab_tick)
+            delta = 1.0/(self.trns_tick + self.stab_tick)
         else:    
             delta = 1.0/(2*self.trns_tick+2*self.stab_tick)
         d_alpha = 1.0*self.batchsize/self.trns_tick/self.TICK
@@ -291,10 +299,11 @@ class trainer:
         for step in range(2, self.max_resl+1+5):  # +1+5?
             if self.phase == 'init':
                 total_tick = self.trns_tick+self.stab_tick
-                start_tick = self.globalTick + 1
+                start_tick = self.globalTick
             else:
                 total_tick = self.trns_tick*2 + self.stab_tick * 2
                 start_tick = 0
+            print('Start from tick', start_tick, 'till', total_tick)
             for iter in tqdm(range(start_tick ,(total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
