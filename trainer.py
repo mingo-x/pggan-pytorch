@@ -73,7 +73,7 @@ class trainer:
         self.gen_ckpt = config.gen_ckpt
         self.dis_ckpt = config.dis_ckpt
         if self.gen_ckpt != '' and self.dis_ckpt != '':
-            pattern = 'gen_R{}_T{}.pth.tar'
+            pattern = '{}gen_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.gen_ckpt)
             restore_resl = parsed[0]
             restore_tick = parsed[1]
