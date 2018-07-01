@@ -6,7 +6,7 @@ import time
 parser = argparse.ArgumentParser('PGGAN')
 
 ## general settings.
-parser.add_argument('--train_data_root', type=str, default='/scratch_net/arnold/xyp/data')
+parser.add_argument('--train_data_root', type=str, default='/srv/glusterfs/xieya/data')
 parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
 
@@ -53,7 +53,7 @@ parser.add_argument('--beta2', type=float, default=0.99)            # beta2 for 
 
 
 ## display and save setting.
-parser.add_argument('--use_tb', type=bool, default=True)            # enable tensorboard visualization
+parser.add_argument('--use_tb', type=bool, default=False)            # enable tensorboard visualization
 parser.add_argument('--save_img_every', type=int, default=20)       # save images every specified iteration.
 parser.add_argument('--display_tb_every', type=int, default=5)      # display progress every specified iteration.
 
