@@ -77,6 +77,10 @@ class Generator(nn.Module):
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_gen()
+        # TODO: Load weights from checkpoint.
+        if self.restore_resl != 1:
+            for r in xrange(3, self.restore_resl+1):
+                self.grow_network_without_fadein(r)
         
 
 
@@ -123,12 +127,6 @@ class Generator(nn.Module):
         model.add_module('first_block', first_block)
         model.add_module('to_rgb_block', self.to_rgb_block(ndim))
         self.module_names = get_module_names(model)
-
-        # TODO: Load weights from checkpoint.
-        if self.restore_resl != 1:
-            for r in xrange(3, self.restore_resl+1):
-                self.grow_network_without_fadein(r)
-
         return model
     
     def grow_network(self, resl):
@@ -230,6 +228,9 @@ class Discriminator(nn.Module):
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_dis()
+        if self.restore_resl != 1:
+            for r in xrange(3, self.restore_resl+1):
+                self.grow_network_without_fadein(r)
 
     def last_block(self):
         # add minibatch_std_concat_layer later.
@@ -275,11 +276,6 @@ class Discriminator(nn.Module):
         model.add_module('from_rgb_block', self.from_rgb_block(ndim))
         model.add_module('last_block', last_block)
         self.module_names = get_module_names(model)
-
-        if self.restore_resl != 1:
-            for r in xrange(3, self.restore_resl+1):
-                self.grow_network_without_fadein(r)
-
         return model
     
 
