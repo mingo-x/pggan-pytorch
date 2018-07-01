@@ -2,7 +2,8 @@ import dataloader as DL
 from config import config
 import network as net
 from math import floor, ceil
-import os, sys
+import os, sys 
+from parse import parse
 import torch
 import torchvision.transforms as transforms
 from torch.autograd import Variable, grad
