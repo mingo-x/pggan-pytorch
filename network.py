@@ -81,7 +81,7 @@ class Generator(nn.Module):
         self.model = self.get_init_gen()
 
         if self.gen_ckpt != '' and self.dis_ckpt != '':
-            pattern = 'gen_R{}_T{}.pth.tar'
+            pattern = '{}gen_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.gen_ckpt)
             resl = parsed[0]
             gen_ckpt = torch.load(self.gen_ckpt)
@@ -238,7 +238,7 @@ class Discriminator(nn.Module):
         self.model = self.get_init_dis()
 
         if self.gen_ckpt != '' and self.dis_ckpt != '':
-            pattern = 'dis_R{}_T{}.pth.tar'
+            pattern = '{}dis_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.dis_ckpt)
             resl = parsed[0]
             dis_ckpt = torch.load(self.dis_ckpt)
