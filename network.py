@@ -88,6 +88,9 @@ class Generator(nn.Module):
             for r in xrange(3, resl):
                 self.grow_network_without_fadein(r)
 
+            print(self.model)
+            for k, v in gen_ckpt['state_dict']:
+                print(k)
             self.module.load_state_dict(gen_ckpt['state_dict'])   
             gen_ckpt = None  
 
