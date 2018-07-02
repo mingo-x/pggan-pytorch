@@ -12,6 +12,7 @@ from tqdm import tqdm
 import tf_recorder as tensorboard
 import utils as utils
 import numpy as np
+import monotonic
 
 
 class trainer:
@@ -309,6 +310,7 @@ class trainer:
                 start_tick = 0
             print('Start from tick', start_tick, 'till', total_tick)
             for iter in tqdm(range(start_tick * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
+                time1 = monotonic.monotonic()
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
                 if self.stack > ceil(len(self.loader.dataset)):
@@ -324,6 +326,7 @@ class trainer:
 
                 # update discriminator.
                 self.x.data = self.feed_interpolated_input(self.loader.get_batch())
+                time2 = monotonic.monotonic()
                 if self.flag_add_noise:
                     self.x = self.add_noise(self.x)
                 self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
@@ -350,7 +353,7 @@ class trainer:
                     loss_g = self.mse(fx_tilde, self.real_label.detach())
                 loss_g.backward()
                 self.opt_g.step()
-
+                time3 = monotonic.monotonic()
                 # logging.
                 log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr)
                 tqdm.write(log_msg)
@@ -365,7 +368,8 @@ class trainer:
                     utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
                     utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
-
+                time4 = monotonic.monotonic()
+                print(time2-time1, time3-time2, time4-time3)
 
                 # tensorboard visualization.
                 if self.use_tb:
