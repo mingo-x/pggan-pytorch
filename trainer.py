@@ -310,7 +310,6 @@ class trainer:
                 start_tick = 0
             print('Start from tick', start_tick, 'till', total_tick)
             for iter in tqdm(range(start_tick * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
-                time1 = monotonic.monotonic()
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
                 if self.stack > ceil(len(self.loader.dataset)):
@@ -324,9 +323,10 @@ class trainer:
                 self.G.zero_grad()
                 self.D.zero_grad()
 
-                time2 = monotonic.monotonic()
                 # update discriminator.
-                self.x.data = self.feed_interpolated_input(self.loader.get_batch())
+                batch, time = self.loader.get_batch()
+                time2 = monotonic.monotonic()
+                self.x.data = self.feed_interpolated_input(batch)
                 time3 = monotonic.monotonic()
                 if self.flag_add_noise:
                     self.x = self.add_noise(self.x)
@@ -370,7 +370,7 @@ class trainer:
                     os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
                     utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                 time5 = monotonic.monotonic()
-                print(time2-time1, time3-time2, time4-time3, time5-time4)
+                print(time, time3-time2, time4-time3, time5-time4)
 
                 # tensorboard visualization.
                 if self.use_tb:
