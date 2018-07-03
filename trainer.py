@@ -191,7 +191,6 @@ class trainer:
                 self.phase = 'final'
                 self.resl = self.max_resl + (self.stab_tick + self.trns_tick*2)*delta
 
-
             
     def renew_everything(self):
         # renew dataloader.
@@ -379,6 +378,8 @@ class trainer:
                     self.tb.add_image_grid('grid/x_tilde', 4, utils.adjust_dyn_range(self.x_tilde.data.float(), [-1,1], [0,1]), self.globalIter)
                     self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
 
+            if self.phase == 'init':
+                self.phase = 'dstab'
 
     def get_state(self, target):
         if target == 'gen':
