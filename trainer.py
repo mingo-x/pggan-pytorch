@@ -185,6 +185,7 @@ class trainer:
                 self.fadein['dis'] = self.D.module.model.fadein_block
                 self.flag_flush_gen = True
                 self.flag_flush_dis = True
+                self.phase = 'gtrns'
 
             if floor(self.resl) >= self.max_resl and self.resl%1.0 >= (self.stab_tick + self.trns_tick*2)*delta:
                 self.phase = 'final'
@@ -377,9 +378,6 @@ class trainer:
                     self.tb.add_image_grid('grid/x_test', 4, utils.adjust_dyn_range(x_test.data.float(), [-1,1], [0,1]), self.globalIter)
                     self.tb.add_image_grid('grid/x_tilde', 4, utils.adjust_dyn_range(self.x_tilde.data.float(), [-1,1], [0,1]), self.globalIter)
                     self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
-
-            if self.phase == 'init':
-                self.phase = 'dstab'
 
 
     def get_state(self, target):
