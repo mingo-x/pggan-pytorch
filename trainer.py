@@ -378,6 +378,9 @@ class trainer:
                     self.tb.add_image_grid('grid/x_tilde', 4, utils.adjust_dyn_range(self.x_tilde.data.float(), [-1,1], [0,1]), self.globalIter)
                     self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
 
+            if self.phase == 'init':
+                self.phase = 'gtrns'
+
 
     def get_state(self, target):
         if target == 'gen':
