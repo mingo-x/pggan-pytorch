@@ -38,7 +38,8 @@ class dataloader:
             dataset=self.dataset,
             batch_size=self.batchsize,
             shuffle=True,
-            num_workers=self.num_workers
+            num_workers=self.num_workers,
+            drop_last=True,
         )
         self.iter = iter(self.dataloader)
 
@@ -50,15 +51,17 @@ class dataloader:
 
     def __len__(self):
         return len(self.dataloader.dataset)
-
        
     def get_batch(self):
         time1 = monotonic.monotonic()
-        next_batch = self.iter.next()[0]
+        try:
+            next_batch = self.iter.next()[0]
+        except:
+            self.iter = iter(self.dataloader)
+            next_batch = self.iter.next()[0]
         time2 = monotonic.monotonic()
         next_batch = next_batch.mul(2).add(-1)         # pixel range [-1, 1]
-        time3 = monotonic.monotonic()
-        return next_batch, time2-time1, time3-time2
+        return next_batch, time2-time1
 
 
         
