@@ -84,7 +84,7 @@ class Generator(nn.Module):
             pattern = '{}gen_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.gen_ckpt)
             resl = int(parsed[1])
-            for r in xrange(3, resl):
+            for r in xrange(3, resl+1):
                 self.grow_network_without_fadein(r) 
 
     def first_block(self):
@@ -237,7 +237,7 @@ class Discriminator(nn.Module):
             pattern = '{}dis_R{}_T{}.pth.tar'
             parsed = parse(pattern, self.dis_ckpt)
             resl = int(parsed[1])
-            for r in xrange(3, resl):
+            for r in xrange(3, resl+1):
                 self.grow_network_without_fadein(r)
 
     def last_block(self):

@@ -379,7 +379,7 @@ class trainer:
                     self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
 
             if self.phase == 'init':
-                self.phase = 'gtrns'
+                self.phase = 'dstab'
 
 
     def get_state(self, target):
