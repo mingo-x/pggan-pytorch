@@ -53,15 +53,13 @@ class dataloader:
         return len(self.dataloader.dataset)
        
     def get_batch(self):
-        time1 = monotonic.monotonic()
         try:
             next_batch = self.iter.next()[0]
         except:
             self.iter = iter(self.dataloader)
             next_batch = self.iter.next()[0]
-        time2 = monotonic.monotonic()
         next_batch = next_batch.mul(2).add(-1)         # pixel range [-1, 1]
-        return next_batch, time2-time1
+        return next_batch
 
 
         
