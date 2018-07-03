@@ -54,10 +54,12 @@ class dataloader:
     def get_batch(self):
         time1 = monotonic.monotonic()
         dataIter = iter(self.dataloader)
-        next_batch = next(dataIter)[0].mul(2).add(-1)         # pixel range [-1, 1]
         time2 = monotonic.monotonic()
-        time = time2-time1
-        return next_batch, time
+        next_batch = next(dataIter)[0]
+        time3 = monotonic.monotonic()
+        next_batch = next_batch.mul(2).add(-1)         # pixel range [-1, 1]
+        time4 = monotonic.monotonic()
+        return next_batch, time2-time1, time3-time2, time4-time3
 
 
         
