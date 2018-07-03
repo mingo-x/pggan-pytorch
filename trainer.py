@@ -324,7 +324,7 @@ class trainer:
                 self.D.zero_grad()
 
                 # update discriminator.
-                batch, time1, time2, time3 = self.loader.get_batch()
+                batch, time1, time2 = self.loader.get_batch()
                 self.x.data = self.feed_interpolated_input(batch)
                 if self.flag_add_noise:
                     self.x = self.add_noise(self.x)
@@ -366,7 +366,7 @@ class trainer:
                     utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
                     utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
-                print(time1, time2, time3)
+                print(time1, time2)
 
                 # tensorboard visualization.
                 if self.use_tb:
