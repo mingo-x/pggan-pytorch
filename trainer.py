@@ -87,6 +87,8 @@ class trainer:
                 "Restored learning rate", self.lr)
             self.resl = restore_resl
             self.globalTick = restore_tick
+            if int(floor(self.resl)) != 2:
+                self.phase = 'gtrns'
 
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
@@ -312,7 +314,7 @@ class trainer:
                 start_tick = self.globalTick
             else:
                 total_tick = self.trns_tick*2 + self.stab_tick * 2
-                start_tick = 0
+                start_tick = self.globalTick - (floor(self.resl) - 2.5) * total_tick
             print('Start from tick', start_tick, 'till', total_tick)
             for iter in tqdm(range(start_tick * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
