@@ -79,7 +79,12 @@ class trainer:
             parsed = parse(pattern, self.gen_ckpt)
             restore_resl = float(parsed[1])
             restore_tick = int(parsed[2])
-            print("Restored resolution", restore_resl, "Restored global tick", restore_tick)
+            for _ in xrange(self.resl, restore_resl):
+                self.lr = self.lr * float(self.config.lr_decay)
+            print(
+                "Restored resolution", restore_resl, 
+                "Restored global tick", restore_tick, 
+                "Restored learning rate", self.lr)
             self.resl = restore_resl
             self.globalTick = restore_tick
 
