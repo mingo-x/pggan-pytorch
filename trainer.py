@@ -88,6 +88,10 @@ class trainer:
             self.resl = restore_resl
             self.globalTick = restore_tick
             if int(floor(self.resl)) != 2:
+                self.fadein['gen'] = self.G.module.model.fadein_block
+                self.fadein['dis'] = self.D.module.model.fadein_block
+                self.flag_flush_gen = True
+                self.flag_flush_dis = True
                 self.phase = 'gstab'
                 self.fadein['gen'].set_alpha(1.)
                 self.complete['gen'] = self.fadein['gen'].alpha*100
