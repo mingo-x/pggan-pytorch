@@ -88,7 +88,7 @@ class trainer:
             self.resl = restore_resl
             self.globalTick = restore_tick
             if int(floor(self.resl)) != 2:
-                self.phase = 'gtrns'
+                self.phase = 'gstab'
 
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
