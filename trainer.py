@@ -89,6 +89,8 @@ class trainer:
             self.globalTick = restore_tick
             if int(floor(self.resl)) != 2:
                 self.phase = 'gstab'
+                self.fadein['gen'].set_alpha(1.)
+                self.complete['gen'] = self.fadein['gen'].alpha*100
 
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
