@@ -90,9 +90,8 @@ if __name__ == '__main__':
         transforms.Resize((299, 299)),
         transforms.ToTensor(), 
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ])  # Scale or not?
+        ]))  # Scale or not?
 
-    print("Calculating Inception score...")
     print(inception_score(IgnoreLabelDataset(dataset), cuda=True, batch_size=32, resize=False, splits=10))
 
 
