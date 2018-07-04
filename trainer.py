@@ -316,7 +316,7 @@ class trainer:
                 total_tick = self.trns_tick*2 + self.stab_tick * 2
                 start_tick = self.globalTick - (floor(self.resl) - 2.5) * total_tick
             print('Start from tick', start_tick, 'till', total_tick)
-            for iter in tqdm(range(start_tick * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
+            for iter in tqdm(range(int(start_tick) * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
                 if self.stack > ceil(len(self.loader.dataset)):
