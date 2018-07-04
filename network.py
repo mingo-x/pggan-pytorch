@@ -85,7 +85,9 @@ class Generator(nn.Module):
             parsed = parse(pattern, self.gen_ckpt)
             resl = int(parsed[1])
             for r in xrange(3, resl+1):
-                self.grow_network_without_fadein(r) 
+                if r != 3:
+                    self.flush_network()
+                self.grow_network(r)
 
     def first_block(self):
         layers = []
@@ -238,7 +240,9 @@ class Discriminator(nn.Module):
             parsed = parse(pattern, self.dis_ckpt)
             resl = int(parsed[1])
             for r in xrange(3, resl+1):
-                self.grow_network_without_fadein(r)
+                if r != 3:
+                    self.flush_network()
+                self.grow_network(r)
 
     def last_block(self):
         # add minibatch_std_concat_layer later.
