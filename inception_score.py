@@ -86,12 +86,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('PGGAN')
     parser.add_argument('--data_root', type=str, default='')
     config, _ = parser.parse_known_args()
+    print('Loading data from', config.data_root)
     dataset = ImageFolder(root=config.data_root, transform=transforms.Compose([
         transforms.Resize((299, 299)),
         transforms.ToTensor(), 
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]))  # Scale or not?
-
+    print('Calculating Inception score...')
     print(inception_score(IgnoreLabelDataset(dataset), cuda=True, batch_size=32, resize=False, splits=10))
 
 
