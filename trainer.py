@@ -78,11 +78,11 @@ class trainer:
             # Restore the network structure.
             for resl in xrange(3, restore_resl+1):
                 self.G.module.grow_network(resl)
-                if (resl < restore_resl) or (config.restore_phase == 'dstab'):
-                    self.G.module.flush_network()
                 self.D.module.grow_network(resl)
                 if resl < restore_resl:
+                    self.G.module.flush_network()
                     self.D.module.flush_network()
+                    
             for _ in xrange(int(self.resl), restore_resl):
                 self.lr = self.lr * float(self.config.lr_decay)
             print(
@@ -119,13 +119,16 @@ class trainer:
             self.globalIter = floor(self.globalTick * self.TICK / self.loader.batchsize)
             gen_ckpt = torch.load(self.gen_ckpt)
             dis_ckpt = torch.load(self.dis_ckpt)
-            self.resl = gen_ckpt['resl']
-            self.G.module.load_state_dict(gen_ckpt['state_dict'])
-            self.D.module.load_state_dict(dis_ckpt['state_dict'])
-            print('Model weights restored.')
             self.opt_d.load_state_dict(dis_ckpt['optimizer'])
             self.opt_g.load_state_dict(gen_ckpt['optimizer'])
             print('Optimizer restored.')
+            self.resl = gen_ckpt['resl']
+            if config.restore_phase == 'dstab':
+                self.G.module.flush_network()
+            self.G.module.load_state_dict(gen_ckpt['state_dict'])
+            self.D.module.load_state_dict(dis_ckpt['state_dict'])
+            print('Model weights restored.')
+            
             gen_ckpt = None
             dis_ckpt = None
 
