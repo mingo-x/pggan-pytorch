@@ -334,13 +334,15 @@ class trainer:
         self.z_test.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
         
         
-        for step in range(2, self.max_resl+1+5):  # +1+5?
+        for step in range(int(floor(self.resl)), self.max_resl+1+5):  # +5?
             if self.phase == 'init':
                 total_tick = self.trns_tick+self.stab_tick
                 start_tick = self.globalTick
             else:
                 total_tick = self.trns_tick*2 + self.stab_tick * 2
                 start_tick = self.globalTick - (floor(self.resl) - 2.5) * total_tick
+                if step > self.max_resl:
+                    start_tick = 0
             print('Start from tick', start_tick, 'till', total_tick)
             for iter in tqdm(range(int(start_tick) * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
