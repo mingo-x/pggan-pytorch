@@ -108,11 +108,6 @@ class trainer:
                     self.fadein['gen'].set_alpha(1.)
                     self.complete['gen'] = self.fadein['gen'].alpha*100
 
-        print ('Generator structure: ')
-        print(self.G)
-        print ('Discriminator structure: ')
-        print(self.D)
-
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
         if self.gen_ckpt != '' and self.dis_ckpt != '':
@@ -132,7 +127,11 @@ class trainer:
             gen_ckpt = None
             dis_ckpt = None
 
-        
+        print ('Generator structure: ')
+        print(self.G)
+        print ('Discriminator structure: ')
+        print(self.D)
+
         # tensorboard
         self.use_tb = config.use_tb
         if self.use_tb:
