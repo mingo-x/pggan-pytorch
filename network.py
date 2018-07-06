@@ -80,15 +80,6 @@ class Generator(nn.Module):
         self.module_names = []
         self.model = self.get_init_gen()
 
-        if self.gen_ckpt != '' and self.dis_ckpt != '':
-            pattern = '{}gen_R{}_T{}.pth.tar'
-            parsed = parse(pattern, self.gen_ckpt)
-            resl = int(parsed[1])
-            for r in xrange(3, resl+1):
-                if r != 3:
-                    self.flush_network()
-                self.grow_network(r)
-
     def first_block(self):
         layers = []
         ndim = self.ngf
@@ -161,25 +152,6 @@ class Generator(nn.Module):
             self.model = new_model
             self.module_names = get_module_names(self.model)
 
-
-    def grow_network_without_fadein(self, resl):
-        '''Grow the network without fade-in structure, in order to resume saved model.'''
-        new_model = nn.Sequential()
-        names = get_module_names(self.model)
-        for name, module in self.model.named_children():
-            if not name=='to_rgb_block':
-                new_model.add_module(name, module)  # Make new structure.
-            
-        if resl >= 3 and resl <= 9:
-            print 'growing network[{0}x{0} to {1}x{1}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl)))
-            inter_block, ndim, self.layer_name = self.intermediate_block(resl)
-            new_model.add_module(self.layer_name, inter_block)
-            new_model.add_module('to_rgb_block', self.to_rgb_block(ndim))
-            self.model = None
-            self.model = new_model
-            self.module_names = get_module_names(self.model)
-           
-
     def flush_network(self):
         try:
             print('flushing network... It may take few seconds...')
@@ -234,15 +206,6 @@ class Discriminator(nn.Module):
         self.layer_name = None
         self.module_names = []
         self.model = self.get_init_dis()
-
-        if self.gen_ckpt != '' and self.dis_ckpt != '':
-            pattern = '{}dis_R{}_T{}.pth.tar'
-            parsed = parse(pattern, self.dis_ckpt)
-            resl = int(parsed[1])
-            for r in xrange(3, resl+1):
-                if r != 3:
-                    self.flush_network()
-                self.grow_network(r)
 
     def last_block(self):
         # add minibatch_std_concat_layer later.
@@ -318,25 +281,6 @@ class Discriminator(nn.Module):
             self.model = None
             self.model = new_model
             self.module_names = get_module_names(self.model)
-
-
-    def grow_network_without_fadein(self, resl):
-        if resl >= 3 and resl <= 9:  # Why not 10?
-            print 'growing network[{}x{} to {}x{}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl-1)), int(pow(2,resl)), int(pow(2,resl)))
-            inter_block, ndim, self.layer_name = self.intermediate_block(resl)
-            new_model = nn.Sequential()
-            new_model.add_module('from_rgb_block', self.from_rgb_block(ndim))
-            new_model.add_module(self.layer_name, inter_block)
-
-            # we make new network since pytorch does not support remove_module()
-            names = get_module_names(self.model)
-            for name, module in self.model.named_children():
-                if not name=='from_rgb_block':
-                    new_model.add_module(name, module)                      # make new structure and
-            self.model = None
-            self.model = new_model
-            self.module_names = get_module_names(self.model)
-
 
     def flush_network(self):
         try:
