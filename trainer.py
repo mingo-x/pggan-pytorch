@@ -54,10 +54,6 @@ class trainer:
         # network and cirterion
         self.G = net.Generator(config)
         self.D = net.Discriminator(config)
-        print ('Generator structure: ')
-        print(self.G.model)
-        print ('Discriminator structure: ')
-        print(self.D.model)
         self.mse = torch.nn.MSELoss()
         if self.use_cuda:
             self.mse = self.mse.cuda()
@@ -79,6 +75,30 @@ class trainer:
             parsed = parse(pattern, self.gen_ckpt)
             restore_resl = float(parsed[1])
             restore_tick = int(parsed[2])
+            # Restore the network structure.
+            for resl in xrange(3, int(restore_resl)+1):
+                self.G.module.grow_network(resl)
+                if (resl < int(restore_resl)) or (config.restore_phase == 'dstab'):
+                    self.G.module.flush_network()
+                self.D.module.grow_network(resl)
+                if resl < int(restore_resl):
+                    self.D.module.flush_network()
+            # Restore the network setting.
+            if int(floor(self.resl)) != 2:
+                if config.restore_phase == 'dstab':
+                    self.fadein['dis'] = self.D.module.model.fadein_block
+                    self.flag_flush_dis = True
+                    self.phase = 'dstab'
+                    self.fadein['dis'].set_alpha(1.)
+                    self.complete['dis'] = self.fadein['dis'].alpha*100
+                else:
+                    self.fadein['gen'] = self.G.module.model.fadein_block
+                    self.fadein['dis'] = self.D.module.model.fadein_block
+                    self.flag_flush_gen = True
+                    self.flag_flush_dis = True
+                    self.phase = 'gstab'
+                    self.fadein['gen'].set_alpha(1.)
+                    self.complete['gen'] = self.fadein['gen'].alpha*100
             for _ in xrange(int(self.resl), int(restore_resl)):
                 self.lr = self.lr * float(self.config.lr_decay)
             print(
@@ -87,14 +107,11 @@ class trainer:
                 "Restored learning rate", self.lr)
             self.resl = restore_resl
             self.globalTick = restore_tick
-            if int(floor(self.resl)) != 2:
-                self.fadein['gen'] = self.G.module.model.fadein_block
-                self.fadein['dis'] = self.D.module.model.fadein_block
-                self.flag_flush_gen = True
-                self.flag_flush_dis = True
-                self.phase = 'gstab'
-                self.fadein['gen'].set_alpha(1.)
-                self.complete['gen'] = self.fadein['gen'].alpha*100
+
+        print ('Generator structure: ')
+        print(self.G.model)
+        print ('Discriminator structure: ')
+        print(self.D.model)
 
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()

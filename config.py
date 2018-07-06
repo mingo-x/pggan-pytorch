@@ -11,6 +11,7 @@ parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
 parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/repo/model/gen_R2_T750.pth.tar')
 parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/repo/model/dis_R2_T750.pth.tar')  
+parser.add_argument('--restore_phase', type=str, default='gstab')
 
 
 
