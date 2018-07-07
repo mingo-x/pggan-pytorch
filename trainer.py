@@ -93,7 +93,7 @@ class trainer:
             self.globalTick = restore_tick
             # Restore the network setting.
             if self.resl != 2:
-                if config.restore_phase == 'dstab':
+                if config.restore_phase == 'dstab' or config.restore_phase == 'final':
                     self.fadein['dis'] = self.D.module.model.fadein_block
                     self.flag_flush_dis = True
                     self.phase = 'dstab'
