@@ -118,11 +118,8 @@ class trainer:
             self.opt_g.load_state_dict(gen_ckpt['optimizer'])
             print('Optimizer restored.')
             self.resl = gen_ckpt['resl']
-            if config.restore_phase == 'dstab':
+            if config.restore_phase == 'dstab' or config.restore_phase == 'final':
                 self.G.module.flush_network()
-            elif config.restore_phase == 'final':
-                self.G.module.flush_network()
-                self.D.module.flush_network()
             self.G.module.load_state_dict(gen_ckpt['state_dict'])
             self.D.module.load_state_dict(dis_ckpt['state_dict'])
             print('Model weights restored.')
