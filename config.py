@@ -9,9 +9,9 @@ parser = argparse.ArgumentParser('PGGAN')
 parser.add_argument('--train_data_root', type=str, default='/srv/glusterfs/xieya/data')
 parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
-parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/normal_loss/repo/model/gen_R7_T7650.pth.tar')
-parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/normal_loss/repo/model/dis_R7_T7650.pth.tar')  
-parser.add_argument('--restore_phase', type=str, default='gstab')
+parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/final/repo/model/gen_R7_T9950.pth.tar')
+parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/final/repo/model/dis_R7_T9950.pth.tar')  
+parser.add_argument('--restore_phase', type=str, default='final')
 
 
 
@@ -27,7 +27,7 @@ parser.add_argument('--nz', type=int, default=512)              # input dimensio
 parser.add_argument('--ngf', type=int, default=512)             # feature dimension of final layer of generator.
 parser.add_argument('--ndf', type=int, default=512)             # feature dimension of first layer of discriminator.
 parser.add_argument('--TICK', type=int, default=1000)           # 1 tick = 1000 images = (1000/batch_size) iter.
-parser.add_argument('--max_resl', type=int, default=10)          # 10-->1024, 9-->512, 8-->256
+parser.add_argument('--max_resl', type=int, default=7)          # 10-->1024, 9-->512, 8-->256
 parser.add_argument('--trns_tick', type=int, default=400)       # transition tick
 parser.add_argument('--stab_tick', type=int, default=400)       # stabilization tick
 

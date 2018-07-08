@@ -9,7 +9,7 @@ import utils as utils
 
 
 use_cuda = True
-checkpoint_path = 'repo/model/gen_R8_T55.pth.tar'
+checkpoint_path = '/srv/glusterfs/xieya/repo/model/gen_R7_T10950.pth.tar'
 n_intp = 20
 
 
