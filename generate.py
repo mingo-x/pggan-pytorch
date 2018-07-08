@@ -10,7 +10,7 @@ import utils as utils
 
 use_cuda = True
 checkpoint_path = '/srv/glusterfs/xieya/repo/model/gen_R7_T10950.pth.tar'
-n_intp = 20
+n_intp = 50
 
 
 # load trained model.
@@ -35,48 +35,24 @@ test_model.module.load_state_dict(checkpoint['state_dict'])
 
 # create folder.
 for i in range(1000):
-    name = 'repo/interpolation/try_{}'.format(i)
+    name = 'repo/generate/try_{}'.format(i)
     if not os.path.exists(name):
         os.system('mkdir -p {}'.format(name))
         break;
 
-# interpolate between twe noise(z1, z2).
-z_intp = torch.FloatTensor(1, config.nz)
-z1 = torch.FloatTensor(1, config.nz).normal_(0.0, 1.0)
-z2 = torch.FloatTensor(1, config.nz).normal_(0.0, 1.0)
 if use_cuda:
-    z_intp = z_intp.cuda()
-    z1 = z1.cuda()
-    z2 = z2.cuda()
     test_model = test_model.cuda()
 
-z_intp = Variable(z_intp)
-
-
 for i in range(1, n_intp+1):
-    alpha = i/float(n_intp+1)
-    z_intp.data = z1.mul_(alpha) + z2.mul_(1.0-alpha)
-    fake_im = test_model.module(z_intp)
-    fname = os.path.join(name, '_intp{}.jpg'.format(i))
+    z = torch.FloatTensor(1, config.nz).normal_(0.0, 1.0)
+    if use_cuda:
+        z = z.cuda()
+
+    z = Variable(z)
+    fake_im = test_model.module(z)
+    fname = os.path.join(name, '_gen{}.jpg'.format(i))
     utils.save_image_single(fake_im.data, fname, imsize=pow(2,config.max_resl))
-    print('saved {}-th interpolated image ...'.format(i))
-
-
-
-'''
-
-self.z1.data.normal_(0.0, 1.0)
-self.z2 = torch.FloatTensor(1, config.nz).cuda() if use_cuda else torch.FloatTensor(1,config.nz)
-self.z2 = Variable(self.z2)
-self.z2.data.normal_(0.0, 1.0)
-
-print
-'''
-# forward
-
-
-
-# save
+    print('saved {}-th generated image ...'.format(i))
 
 
 
