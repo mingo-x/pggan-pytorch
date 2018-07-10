@@ -24,7 +24,7 @@ parser.add_argument(
 
 def main():
 	args = parser.parse_args()
-	if args.clean:
+	if args.break:
 		prev_tick = 0
 		with open(args.out_file, 'r') as fin:
 			fin_reader = csv.reader(fin)
