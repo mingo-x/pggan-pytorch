@@ -31,7 +31,7 @@ def main():
 			row_idx = 0
 			for row in fin_reader:
 				row_idx += 1
-				curr_tick = row[1]
+				curr_tick = int(row[1])
 				if prev_tick > curr_tick:
 					print(row_idx, prev_tick, curr_tick)
 				prev_tick = curr_tick
