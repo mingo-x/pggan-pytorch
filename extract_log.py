@@ -24,7 +24,7 @@ def main():
 		for in_line in fin:
 			if not in_line.startswith(" [E:"):
 				continue
-			parsed_fields = parse(log_pattern, in_line)
+			parsed_fields = list(parse(log_pattern, in_line))
 			fout_writer.writerow(parsed_fields)
 
 if __name__ == "__main__":
