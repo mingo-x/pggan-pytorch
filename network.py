@@ -113,7 +113,7 @@ class Generator(nn.Module):
     
     def to_rgb_block(self, c_in):
         layers = []
-        layers = deconv(layers, c_in, self.nc, 1, 1, 0, False, self.flag_bn, self.flag_wn, self.flag_pixelwise, only=True)
+        layers = deconv(layers, c_in, self.nc, 1, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise, only=True)
         if self.flag_tanh:  layers.append(nn.Tanh())
         return nn.Sequential(*layers)
 
