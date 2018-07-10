@@ -17,14 +17,14 @@ parser.add_argument(
 	metavar='PATH',
 	help='Path to the output file.')
 parser.add_argument(
-	'--break',
+	'--breakpoint',
 	default=False,
 	type=bool,
 	help='Check where the training restarts.')
 
 def main():
 	args = parser.parse_args()
-	if args.break:
+	if args.breakpoint:
 		prev_tick = 0
 		with open(args.out_file, 'r') as fin:
 			fin_reader = csv.reader(fin)
