@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser('PGGAN')
 parser.add_argument('--train_data_root', type=str, default='/srv/glusterfs/xieya/data')
 parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
-parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/final/repo/model/gen_R7_T9950.pth.tar')
-parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/final/repo/model/dis_R7_T9950.pth.tar')  
+parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/repo/model/gen_R7_T11300.pth.tar')
+parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/repo/model/dis_R7_T11300.pth.tar')  
 parser.add_argument('--restore_phase', type=str, default='final')
 
 
@@ -43,7 +43,7 @@ parser.add_argument('--flag_sigmoid', type=bool, default=False)     # use of sig
 parser.add_argument('--flag_add_noise', type=bool, default=False)    # add noise to the real image(x)
 parser.add_argument('--flag_norm_latent', type=bool, default=False) # pixelwise normalization of latent vector (z)
 parser.add_argument('--flag_add_drift', type=bool, default=True)   # add drift loss
-parser.add_argument('--flag_wgan', type=bool, default=False)   # use wgan loss
+parser.add_argument('--flag_wgan', type=bool, default=True)   # use wgan loss
 
 
 

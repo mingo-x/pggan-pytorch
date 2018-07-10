@@ -85,9 +85,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser('PGGAN')
     parser.add_argument('--data_root', type=str, default='')
-    config, _ = parser.parse_known_args()
-    print('Loading data from', config.data_root)
-    dataset = ImageFolder(root=config.data_root, transform=transforms.Compose([
+    # config, _ = parser.parse_known_args()
+    data_root = "/srv/glusterfs/xieya/repo/generate/"
+    print('Loading data from', data_root)
+    dataset = ImageFolder(root=data_root, transform=transforms.Compose([
         transforms.Resize((299, 299)),
         transforms.ToTensor(), 
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
