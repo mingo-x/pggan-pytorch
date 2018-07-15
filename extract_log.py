@@ -1,6 +1,9 @@
 import argparse
 import csv
 from parse import parse
+
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser(description='Parse training log')
