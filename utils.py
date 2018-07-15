@@ -41,8 +41,7 @@ def make_image_grid(x, ngrid):
 def save_image_single(x, path, imsize=512):
     from PIL import Image
     grid = make_image_grid(x, 1)
-    grid = adjust_dyn_range(grid, [-1, 1], [0, 255])
-    ndarr = grid.clamp(0, 255).byte().permute(1, 2, 0).numpy()
+    ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).numpy()
     im = Image.fromarray(ndarr)
     im = im.resize((imsize,imsize), Image.NEAREST)
     im.save(path)
@@ -51,8 +50,7 @@ def save_image_single(x, path, imsize=512):
 def save_image_grid(x, path, imsize=512, ngrid=4):
     from PIL import Image
     grid = make_image_grid(x, ngrid)
-    grid = adjust_dyn_range(grid, [-1, 1], [0, 255])
-    ndarr = grid.clamp(0, 255).byte().permute(1, 2, 0).numpy()
+    ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).numpy()
     im = Image.fromarray(ndarr)
     im = im.resize((imsize,imsize), Image.NEAREST)
     im.save(path)
@@ -174,7 +172,6 @@ def save_image(tensor, filename, nrow=8, padding=2,
     tensor = tensor.cpu()
     grid = make_grid(tensor, nrow=nrow, padding=padding, pad_value=pad_value,
                      normalize=normalize, range=range, scale_each=scale_each)
-    grid = adjust_dyn_range(grid, [-1, 1], [0, 255])
-    ndarr = grid.clamp(0, 255).byte().permute(1, 2, 0).numpy()
+    ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).numpy()
     im = Image.fromarray(ndarr)
     im.save(filename)
