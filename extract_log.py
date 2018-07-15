@@ -1,7 +1,7 @@
 import argparse
 import csv
-import os
 from parse import parse
+from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser(description='Parse training log')
 parser.add_argument(
@@ -21,10 +21,33 @@ parser.add_argument(
 	default=False,
 	type=bool,
 	help='Check where the training restarts.')
+parser.add_argument(
+	'--plot',
+	default=False,
+	type=bool,
+	help='Check where the training restarts.')
 
 def main():
 	args = parser.parse_args()
-	if args.breakpoint:
+	if args.plot:
+		with open(args.out_file, 'r') as fin:
+			fin_reader = csv.reader(fin)
+			row_idx = 0
+			g_loss = []
+			d_loss = []
+			for row in fin_reader:
+				row_idx += 1
+				d_loss.append(row[4])
+				g_loss.append(row[5])
+			print("Finish parsing data.")
+			plt.plot(d_loss)
+			plt.savefig("d_loss.png")
+			print("D loss saved.")
+			plt.plot(g_loss)
+			plt.savefig("g_loss.png")
+			print("G loss saved.")
+
+	elif args.breakpoint:
 		prev_tick = 0
 		with open(args.out_file, 'r') as fin:
 			fin_reader = csv.reader(fin)
