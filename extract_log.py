@@ -44,10 +44,10 @@ def main():
 				if int(row[8]) != prev_resl:
 					print("Finish parsing data for resolution", prev_resl)
 					plt.plot(d_loss)
-					plt.savefig("d_loss.png")
+					plt.savefig("d_loss_{}.png".format(prev_resl))
 					print("D loss saved.")
 					plt.plot(g_loss)
-					plt.savefig("g_loss.png")
+					plt.savefig("g_loss_{}.png".format(prev_resl))
 					print("G loss saved.")
 					g_loss = []
 					d_loss = []
