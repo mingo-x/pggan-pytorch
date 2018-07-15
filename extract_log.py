@@ -38,17 +38,29 @@ def main():
 			row_idx = 0
 			g_loss = []
 			d_loss = []
+			prev_resl = 4
 			for row in fin_reader:
 				row_idx += 1
-				d_loss.append(row[4])
-				g_loss.append(row[5])
-			print("Finish parsing data.")
+				if int(row[8]) != prev_resl:
+					print("Finish parsing data for resolution", prev_resl)
+					plt.plot(d_loss)
+					plt.savefig("d_loss.png")
+					print("D loss saved.")
+					plt.plot(g_loss)
+					plt.savefig("g_loss.png")
+					print("G loss saved.")
+					g_loss = []
+					d_loss = []
+					prev_resl = int(row[8])
+				d_loss.append(float(row[4]))
+				g_loss.append(float(row[5]))
+			print("Finish parsing data for resolution", prev_resl)
 			plt.plot(d_loss)
 			plt.savefig("d_loss.png")
 			print("D loss saved.")
 			plt.plot(g_loss)
 			plt.savefig("g_loss.png")
-			print("G loss saved.")
+			print("G loss saved.")	
 
 	elif args.breakpoint:
 		prev_tick = 0
