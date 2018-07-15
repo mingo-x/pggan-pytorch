@@ -59,12 +59,12 @@ def main():
 
 			print("Finish parsing data for resolution", prev_resl)
 			plt.plot(d_loss)
-			plt.clf()
 			plt.savefig("d_loss_{}.png".format(prev_resl))
+			plt.clf()
 			print("D loss saved.")
 			plt.plot(g_loss)
-			plt.clf()
 			plt.savefig("g_loss_{}.png".format(prev_resl))
+			plt.clf()
 			print("G loss saved.")	
 
 	elif args.breakpoint:
