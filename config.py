@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser('PGGAN')
 parser.add_argument('--train_data_root', type=str, default='/srv/glusterfs/xieya/data')
 parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
-parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/repo/model/gen_R7_T11300.pth.tar')
-parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/repo/model/dis_R7_T11300.pth.tar')  
+parser.add_argument('--gen_ckpt', type=str, default='')
+parser.add_argument('--dis_ckpt', type=str, default='')  
 parser.add_argument('--restore_phase', type=str, default='final')
 
 
@@ -19,7 +19,7 @@ parser.add_argument('--restore_phase', type=str, default='final')
 
 ## training parameters.
 parser.add_argument('--lr', type=float, default=0.001)          # learning rate.
-parser.add_argument('--lr_decay', type=float, default=0.87)     # learning rate decay at every resolution transition.
+parser.add_argument('--lr_decay', type=float, default=1.)     # learning rate decay at every resolution transition.
 parser.add_argument('--eps_drift', type=float, default=0.001)   # coeff for the drift loss.
 parser.add_argument('--smoothing', type=float, default=0.997)   # smoothing factor for smoothed generator.
 parser.add_argument('--nc', type=int, default=3)                # number of input channel.
@@ -28,8 +28,8 @@ parser.add_argument('--ngf', type=int, default=512)             # feature dimens
 parser.add_argument('--ndf', type=int, default=512)             # feature dimension of first layer of discriminator.
 parser.add_argument('--TICK', type=int, default=1000)           # 1 tick = 1000 images = (1000/batch_size) iter.
 parser.add_argument('--max_resl', type=int, default=7)          # 10-->1024, 9-->512, 8-->256
-parser.add_argument('--trns_tick', type=int, default=400)       # transition tick
-parser.add_argument('--stab_tick', type=int, default=400)       # stabilization tick
+parser.add_argument('--trns_tick', type=int, default=600)       # transition tick
+parser.add_argument('--stab_tick', type=int, default=600)       # stabilization tick
 
 
 ## network structure.
@@ -55,7 +55,7 @@ parser.add_argument('--beta2', type=float, default=0.99)            # beta2 for 
 
 
 ## display and save setting.
-parser.add_argument('--use_tb', type=bool, default=False)            # enable tensorboard visualization
+parser.add_argument('--use_tb', type=bool, default=True)            # enable tensorboard visualization
 parser.add_argument('--save_img_every', type=int, default=100)       # save images every specified iteration.
 parser.add_argument('--display_tb_every', type=int, default=5)      # display progress every specified iteration.
 

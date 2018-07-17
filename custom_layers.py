@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 from PIL import Image
 import copy
-from torch.nn.init import kaiming_normal, calculate_gain
+from torch.nn.init import kaiming_normal, calculate_gain, normal
 
 # same function as ConcatTable container in Torch7.
 class ConcatTable(nn.Module):
@@ -99,18 +99,17 @@ class pixelwise_norm_layer(nn.Module):
         return x / (torch.mean(x**2, dim=1, keepdim=True) + self.eps) ** 0.5
 
 
-# for equaliaeed-learning rate.
+# for equalized-learning rate.
 class equalized_conv2d(nn.Module):
     def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming', bias=False):
         super(equalized_conv2d, self).__init__()
         self.conv = nn.Conv2d(c_in, c_out, k_size, stride, pad, bias=False)
         if initializer == 'kaiming':    kaiming_normal(self.conv.weight, a=calculate_gain('conv2d'))
-        elif initializer == 'xavier':   xavier_normal(self.conv.weight)
-        
-        conv_w = self.conv.weight.data.clone()
+        # elif initializer == 'xavier':   xavier_normal(self.conv.weight)
+
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
-        self.scale = (torch.mean(self.conv.weight.data ** 2)) ** 0.5
-        self.conv.weight.data.copy_(self.conv.weight.data/self.scale)
+        self.scale = (torch.mean(self.conv.weight.data ** 2)) ** 0.5  # Std.
+        self.conv.weight.data.copy_(self.conv.weight.data/self.scale)  # N(0, 1)
 
     def forward(self, x):
         x = self.conv(x.mul(self.scale))

@@ -79,7 +79,7 @@ class trainer:
             for resl in xrange(3, restore_resl+1):
                 self.G.module.grow_network(resl)
                 self.D.module.grow_network(resl)
-                if resl < restore_resl:
+                if resl <= restore_resl:
                     self.G.module.flush_network()
                     self.D.module.flush_network()
                     
@@ -93,25 +93,7 @@ class trainer:
             self.globalTick = restore_tick
             # Restore the network setting.
             if self.resl != 2:
-                if config.restore_phase == 'dstab':
-                    self.fadein['dis'] = self.D.module.model.fadein_block
-                    self.flag_flush_dis = True
-                    self.phase = 'dstab'
-                    self.fadein['dis'].set_alpha(1.)
-                    self.complete['dis'] = self.fadein['dis'].alpha*100
-                elif config.restore_phase == 'final':
-                    self.fadein['dis'] = self.D.module.model.fadein_block
-                    self.phase = 'final'
-                    self.fadein['dis'].set_alpha(1.)
-                    self.complete['dis'] = self.fadein['dis'].alpha*100
-                else:
-                    self.fadein['gen'] = self.G.module.model.fadein_block
-                    self.fadein['dis'] = self.D.module.model.fadein_block
-                    self.flag_flush_gen = True
-                    self.flag_flush_dis = True
-                    self.phase = 'gstab'
-                    self.fadein['gen'].set_alpha(1.)
-                    self.complete['gen'] = self.fadein['gen'].alpha*100
+                self.phase = config.restore_phase
 
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
@@ -123,8 +105,6 @@ class trainer:
             self.opt_g.load_state_dict(gen_ckpt['optimizer'])
             print('Optimizer restored.')
             self.resl = gen_ckpt['resl']
-            if config.restore_phase == 'dstab' or config.restore_phase == 'final':
-                self.G.module.flush_network()
             self.G.module.load_state_dict(gen_ckpt['state_dict'])
             self.D.module.load_state_dict(dis_ckpt['state_dict'])
             print('Model weights restored.')
@@ -147,10 +127,8 @@ class trainer:
         '''
         this function will schedule image resolution(self.resl) progressively.
         it should be called every iteration to ensure resl value is updated properly.
-        step 1. (trns_tick) --> transition in generator.
-        step 2. (stab_tick) --> stabilize.
-        step 3. (trns_tick) --> transition in discriminator.
-        step 4. (stab_tick) --> stabilize.
+        step 1. (trns_tick) -> transition in both gen and dis.
+        step 2. (stab_tick) -> stabilize.
         '''
         if floor(self.resl) != 2 :
             self.trns_tick = self.config.trns_tick
@@ -158,26 +136,21 @@ class trainer:
         
         self.batchsize = self.loader.batchsize
         if self.phase == 'init':
-            delta = 1.0/(self.trns_tick + self.stab_tick)
-        else:    
-            delta = 1.0/(2*self.trns_tick+2*self.stab_tick)
+            delta = 1.0/self.stab_tick
+        else:
+            delta = 1.0/(self.trns_tick+self.stab_tick)
         d_alpha = 1.0*self.batchsize/self.trns_tick/self.TICK
 
         # update alpha if fade-in layer exist.
-        if self.fadein['gen'] is not None:
-            if self.resl%1.0 < (self.trns_tick)*delta:  # [0, 0.25)
+        if self.fadein['gen'] is not None and self.fadein['dis'] is not None:
+            if self.resl%1.0 < (self.trns_tick)*delta:  # [0, 0.5)
                 self.fadein['gen'].update_alpha(d_alpha)
-                self.complete['gen'] = self.fadein['gen'].alpha*100
-                self.phase = 'gtrns'
-            elif self.resl%1.0 >= (self.trns_tick)*delta and self.resl%1.0 < (self.trns_tick+self.stab_tick)*delta:  # [0.25, 0.5)
-                self.phase = 'gstab'
-        if self.fadein['dis'] is not None:
-            if self.resl%1.0 >= (self.trns_tick+self.stab_tick)*delta and self.resl%1.0 < (self.stab_tick + self.trns_tick*2)*delta:  # [0.5, 0.75)
                 self.fadein['dis'].update_alpha(d_alpha)
+                self.complete['gen'] = self.fadein['gen'].alpha*100
                 self.complete['dis'] = self.fadein['dis'].alpha*100
-                self.phase = 'dtrns'
-            elif self.resl%1.0 >= (self.stab_tick + self.trns_tick*2)*delta and self.phase!='final':  # [0.75, 1.0]
-                self.phase = 'dstab'
+                self.phase = 'trns'
+            elif self.resl%1.0 >= self.trns_tick*delta and self.resl%1.0 <= (self.trns_tick+self.stab_tick)*delta and self.phase != 'final':  # [0.5, 1.)
+                self.phase = 'stab'
             
         prev_kimgs = self.kimgs
         self.kimgs = self.kimgs + self.batchsize
@@ -185,11 +158,11 @@ class trainer:
             self.globalTick = self.globalTick + 1
             # increase linearly every tick, and grow network structure.
             prev_resl = floor(self.resl)
-            self.resl = self.resl + delta
+            self.resl += delta
             self.resl = max(2, min(10.5, self.resl))        # clamping, range: 4 ~ 1024
 
             # flush network.
-            if self.flag_flush_gen and self.resl%1.0 >= (self.trns_tick+self.stab_tick)*delta and prev_resl!=2:
+            if self.flag_flush_gen and self.flag_flush_dis and self.resl%1.0 >= (self.trns_tick)*delta and prev_resl!=2:
                 if self.fadein['gen'] is not None:
                     self.fadein['gen'].update_alpha(d_alpha)
                     self.complete['gen'] = self.fadein['gen'].alpha*100
@@ -199,8 +172,7 @@ class trainer:
                 #self.Gs.module.flush_network()         # flush Gs
                 self.fadein['gen'] = None
                 self.complete['gen'] = 0.0
-                self.phase = 'dtrns'
-            elif self.flag_flush_dis and floor(self.resl) != prev_resl and prev_resl!=2:
+
                 if self.fadein['dis'] is not None:
                     self.fadein['dis'].update_alpha(d_alpha)
                     self.complete['dis'] = self.fadein['dis'].alpha*100
@@ -209,8 +181,8 @@ class trainer:
                 print(self.D.module.model)
                 self.fadein['dis'] = None
                 self.complete['dis'] = 0.0
-                if floor(self.resl) < self.max_resl and self.phase != 'final':
-                    self.phase = 'gtrns'
+
+                self.phase = 'stab'
 
             # grow network.
             if floor(self.resl) != prev_resl and floor(self.resl)<self.max_resl+1:
@@ -222,11 +194,11 @@ class trainer:
                 self.fadein['dis'] = self.D.module.model.fadein_block
                 self.flag_flush_gen = True
                 self.flag_flush_dis = True
-                self.phase = 'gtrns'
+                self.phase = 'trns'
 
-            if floor(self.resl) >= self.max_resl and self.resl%1.0 >= (self.stab_tick + self.trns_tick*2)*delta:
+            if floor(self.resl) >= self.max_resl and self.resl%1.0 >= self.trans_tick*delta:
                 self.phase = 'final'
-                self.resl = self.max_resl + (self.stab_tick + self.trns_tick*2)*delta
+                self.resl = self.max_resl + self.trns_tick *delta
 
             
     def renew_everything(self):
@@ -270,7 +242,7 @@ class trainer:
         
 
     def feed_interpolated_input(self, x):
-        if self.phase == 'gtrns' and floor(self.resl)>2 and floor(self.resl)<=self.max_resl:
+        if self.phase == 'trns' and floor(self.resl)>2 and floor(self.resl)<=self.max_resl:
             alpha = self.complete['gen']/100.0
             transform = transforms.Compose( [   transforms.ToPILImage(),
                                                 transforms.Resize(size=int(pow(2,floor(self.resl)-1)), interpolation=0),      # 0: nearest
@@ -338,12 +310,12 @@ class trainer:
         self.z_test.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
         
         
-        for step in range(int(floor(self.resl)), self.max_resl+1+5):  # +5?
+        for step in range(int(floor(self.resl)), self.max_resl+1+5):
             if self.phase == 'init':
-                total_tick = self.trns_tick+self.stab_tick
+                total_tick = self.stab_tick
                 start_tick = self.globalTick
             else:
-                total_tick = self.trns_tick*2 + self.stab_tick * 2
+                total_tick = self.trns_tick + self.stab_tick
                 start_tick = self.globalTick - (floor(self.resl) - 2.5) * total_tick
                 if step > self.max_resl:
                     start_tick = 0
@@ -418,7 +390,7 @@ class trainer:
                     self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
 
             if self.phase == 'init':
-                self.phase = 'dstab'
+                self.phase = 'stab'
 
     def get_state(self, target):
         if target == 'gen':
@@ -444,7 +416,7 @@ class trainer:
         ndis = 'dis_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
         ngen = 'gen_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
         if self.globalTick != 0 and self.globalTick%50==0:
-            if self.phase == 'gstab' or self.phase =='dstab' or self.phase == 'final' or self.phase == 'init':
+            if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
                 save_path = os.path.join(path, ndis)
                 if not os.path.exists(save_path):
                     torch.save(self.get_state('dis'), save_path)
