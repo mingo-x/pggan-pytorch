@@ -85,7 +85,8 @@ class Generator(nn.Module):
         ndim = self.ngf
         if self.flag_norm_latent:
             layers.append(pixelwise_norm_layer())
-        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn)
+        #layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn)
+        # Reshape
         layers = deconv(layers, self.nz, ndim, 4, 1, 3, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         layers = deconv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         return  nn.Sequential(*layers), ndim
