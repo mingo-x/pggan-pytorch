@@ -1,1 +1,1 @@
-ssh xieya@xxx "export PATH="/srv/glusterfs/xieya/anaconda2/bin:$PATH"; echo \$PATH; CUDA_VISIBLE_DEVICES=x python ~/pggan-pytorch/trainer.py"
+ssh xieya@xxx "export PATH="/srv/glusterfs/xieya/anaconda2/bin:$PATH"; echo \$PATH; cd /srv/glusterfs/xieya/pytorch; CUDA_VISIBLE_DEVICES=x python ~/pggan-pytorch/trainer.py"

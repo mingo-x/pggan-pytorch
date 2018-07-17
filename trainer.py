@@ -321,7 +321,7 @@ class trainer:
                 start_tick = self.globalTick - (floor(self.resl) - 2.5) * total_tick
                 if step > self.max_resl:
                     start_tick = 0
-            print('Start from tick', start_tick, 'till', total_tick, floor(self.resl), self.phase, self.globalTick)
+            print('Start from tick', start_tick, 'till', total_tick)
             for iter in tqdm(range(int(start_tick) * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
                 self.globalIter = self.globalIter+1
                 self.stack = self.stack + self.loader.batchsize
