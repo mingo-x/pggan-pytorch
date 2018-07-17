@@ -30,11 +30,11 @@ def conv(layers, c_in, c_out, k_size, stride=1, pad=0, leaky=True, bn=False, wn=
         if pixel:   layers.append(pixelwise_norm_layer())
     return layers
 
-def linear(layers, c_in, c_out, sig=True, wn=False, shape=False, leaky=False, pixel=False, a=1.):
+def linear(layers, c_in, c_out, sig=True, wn=False, reshape=False, leaky=False, pixel=False, a=1.):
     layers.append(Flatten())
     if wn:      layers.append(equalized_linear(c_in, c_out, a=a))
     else:       layers.append(Linear(c_in, c_out))
-    if shape is not None:
+    if reshape:
         layers.append(View(-1, 4, 4))
     if sig:     layers.append(nn.Sigmoid())
     if leaky:   layers.append(nn.LeakyReLU(0.2))
@@ -88,7 +88,7 @@ class Generator(nn.Module):
         ndim = self.ngf
         if self.flag_norm_latent:
             layers.append(pixelwise_norm_layer())
-        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn, shape=True, leaky=True, pixel=True, a=15.)
+        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn, reshape=True, leaky=True, pixel=True, a=15.)
         # layers = deconv(layers, self.nz, ndim, 4, 1, 3, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         layers = deconv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         return  nn.Sequential(*layers), ndim
