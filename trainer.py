@@ -346,6 +346,8 @@ class trainer:
                
                 self.fx = self.D(self.x)
                 self.fx_tilde = self.D(self.x_tilde.detach())
+                real_score = torch.mean(self.fx)
+                fake_score = torch.mean(self.fx_tilde)
                 if self.flag_wgan:
                     loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
                     loss_d_fake = self.fx_tilde
@@ -366,7 +368,8 @@ class trainer:
                 loss_g.backward()
                 self.opt_g.step()
                 # logging.
-                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, self.fx.data[0], self.fx_tilde.data[0])
+                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(
+                    self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0])
                 tqdm.write(log_msg)
 
                 # save model.
