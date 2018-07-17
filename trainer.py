@@ -318,7 +318,7 @@ class trainer:
                 start_tick = self.globalTick
             else:
                 total_tick = self.trns_tick + self.stab_tick
-                start_tick = self.globalTick - (floor(self.resl) - 2.5) * total_tick
+                start_tick = self.globalTick - (step - 2.5) * total_tick
                 if step > self.max_resl:
                     start_tick = 0
             print('Start from tick', start_tick, 'till', total_tick)
