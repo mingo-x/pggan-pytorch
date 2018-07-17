@@ -20,7 +20,7 @@ class dataloader:
         self.batch_table = {4:128, 8:128, 16:128, 32:64, 64:32, 128:16, 256:8, 512:4, 1024:4} # change this according to available gpu memory.
         self.batchsize = int(self.batch_table[pow(2,2)])        # we start from 2^2=4
         self.imsize = int(pow(2,2))
-        self.num_workers = 4
+        self.num_workers = {4:16, 8:16, 16:16, 32:8, 64:8, 128:4, 256:4, 512:4, 1024:4}
         
     def renew(self, resl):
         print('[*] Renew dataloader configuration, load data from {}.'.format(self.root))
@@ -38,7 +38,7 @@ class dataloader:
             dataset=self.dataset,
             batch_size=self.batchsize,
             shuffle=True,
-            num_workers=self.num_workers,
+            num_workers=self.num_workers[self.imsize],
             drop_last=True,
         )
         self.iter = iter(self.dataloader)
