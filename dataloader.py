@@ -17,7 +17,7 @@ import monotonic
 class dataloader:
     def __init__(self, config):
         self.root = config.train_data_root
-        self.batch_table = {4:32, 8:32, 16:32, 32:16, 64:16, 128:16, 256:14, 512:6, 1024:3} # change this according to available gpu memory.
+        self.batch_table = {4:128, 8:128, 16:128, 32:64, 64:32, 128:16, 256:8, 512:4, 1024:4} # change this according to available gpu memory.
         self.batchsize = int(self.batch_table[pow(2,2)])        # we start from 2^2=4
         self.imsize = int(pow(2,2))
         self.num_workers = 4

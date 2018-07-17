@@ -4,3 +4,4 @@
 4. Reset optimizer for new lod
 5. fp32
 6. Verify loss
+7. Batch size
