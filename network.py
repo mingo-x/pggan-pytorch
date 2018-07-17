@@ -30,10 +30,12 @@ def conv(layers, c_in, c_out, k_size, stride=1, pad=0, leaky=True, bn=False, wn=
         if pixel:   layers.append(pixelwise_norm_layer())
     return layers
 
-def linear(layers, c_in, c_out, sig=True, wn=False, leaky=False, pixel=False):
+def linear(layers, c_in, c_out, sig=True, wn=False, shape=False, leaky=False, pixel=False, a=1.):
     layers.append(Flatten())
-    if wn:      layers.append(equalized_linear(c_in, c_out))
+    if wn:      layers.append(equalized_linear(c_in, c_out, a=a))
     else:       layers.append(Linear(c_in, c_out))
+    if shape is not None:
+        layers.append(View(-1, 4, 4))
     if sig:     layers.append(nn.Sigmoid())
     if leaky:   layers.append(nn.LeakyReLU(0.2))
     if pixel:   layers.append(pixelwise_norm_layer())
@@ -86,9 +88,7 @@ class Generator(nn.Module):
         ndim = self.ngf
         if self.flag_norm_latent:
             layers.append(pixelwise_norm_layer())
-        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn)
-        layers = layers.view(-1, 4, 4)
-        # Reshape
+        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn, shape=True, leaky=True, pixel=True, a=15.)
         # layers = deconv(layers, self.nz, ndim, 4, 1, 3, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         layers = deconv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         return  nn.Sequential(*layers), ndim
@@ -217,7 +217,8 @@ class Discriminator(nn.Module):
         layers = []
         layers.append(minibatch_std_concat_layer())
         layers = conv(layers, ndim+1, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
-        layers = conv(layers, ndim, ndim, 4, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
+        layers = linear(layers, ndim*4*4, ndim, sig=False, wn=True, leaky=True)
+        # layers = conv(layers, ndim, ndim, 4, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
         layers = linear(layers, ndim, 1, sig=self.flag_sigmoid, wn=self.flag_wn)
         return  nn.Sequential(*layers), ndim
     

@@ -132,11 +132,19 @@ class equalized_deconv2d(nn.Module):
         return x + self.bias.view(1,-1,1,1).expand_as(x)
 
 
+class View(nn.Module):
+    def __init__(self, *shape):
+        super(View, self).__init__()
+        self.shape = shape
+    def forward(self, input):
+        return input.view(self.shape)
+
+
 class equalized_linear(nn.Module):
-    def __init__(self, c_in, c_out, initializer='kaiming'):
+    def __init__(self, c_in, c_out, initializer='kaiming', a=1.):
         super(equalized_linear, self).__init__()
         self.linear = nn.Linear(c_in, c_out, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=1.)
+        if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=a)
         elif initializer == 'xavier':   torch.nn.init.xavier_normal(self.linear.weight)
         
         linear_w = self.linear.weight.data.clone()
