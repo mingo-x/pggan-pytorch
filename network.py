@@ -30,11 +30,13 @@ def conv(layers, c_in, c_out, k_size, stride=1, pad=0, leaky=True, bn=False, wn=
         if pixel:   layers.append(pixelwise_norm_layer())
     return layers
 
-def linear(layers, c_in, c_out, sig=True, wn=False):
+def linear(layers, c_in, c_out, sig=True, wn=False, leaky=False, pixel=False):
     layers.append(Flatten())
     if wn:      layers.append(equalized_linear(c_in, c_out))
     else:       layers.append(Linear(c_in, c_out))
     if sig:     layers.append(nn.Sigmoid())
+    if leaky:   layers.append(nn.LeakyReLU(0.2))
+    if pixel:   layers.append(pixelwise_norm_layer())
     return layers
 
 def deepcopy_module(module, target):
@@ -60,7 +62,6 @@ def get_module_names(model):
             names.append(name)
     return names
 
-
 class Generator(nn.Module):
     def __init__(self, config):
         super(Generator, self).__init__()
@@ -85,9 +86,10 @@ class Generator(nn.Module):
         ndim = self.ngf
         if self.flag_norm_latent:
             layers.append(pixelwise_norm_layer())
-        #layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn)
+        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn)
+        layers = layers.view(-1, 4, 4)
         # Reshape
-        layers = deconv(layers, self.nz, ndim, 4, 1, 3, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
+        # layers = deconv(layers, self.nz, ndim, 4, 1, 3, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         layers = deconv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         return  nn.Sequential(*layers), ndim
 

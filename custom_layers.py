@@ -136,7 +136,7 @@ class equalized_linear(nn.Module):
     def __init__(self, c_in, c_out, initializer='kaiming'):
         super(equalized_linear, self).__init__()
         self.linear = nn.Linear(c_in, c_out, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=0.)
+        if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=1.)
         elif initializer == 'xavier':   torch.nn.init.xavier_normal(self.linear.weight)
         
         linear_w = self.linear.weight.data.clone()
