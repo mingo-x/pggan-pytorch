@@ -366,7 +366,7 @@ class trainer:
                 loss_g.backward()
                 self.opt_g.step()
                 # logging.
-                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr)
+                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, self.fx.data[0], self.fx_tilde.data[0])
                 tqdm.write(log_msg)
 
                 # save model.
@@ -383,6 +383,8 @@ class trainer:
                 # tensorboard visualization.
                 if self.use_tb:
                     x_test = self.G(self.z_test)
+                    self.tb.add_scalar('data/real_score', self.fx.data[0], self.globalIter)
+                    self.tb.add_scalar('data/fake_score', self.fx_tilde.data[0], self.globalIter)
                     self.tb.add_scalar('data/loss_g', loss_g.data[0], self.globalIter)
                     self.tb.add_scalar('data/loss_d', loss_d.data[0], self.globalIter)
                     self.tb.add_scalar('tick/lr', self.lr, self.globalIter)
