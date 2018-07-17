@@ -361,7 +361,9 @@ class trainer:
 
                 # update generator.
                 fx_tilde = self.D(self.x_tilde)
+                print(fx_tilde.size())
                 print(fx_tilde.data)
+                exit()
                 if self.flag_wgan:
                     loss_g = -torch.mean(fx_tilde)
                 else:
