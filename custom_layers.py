@@ -88,7 +88,7 @@ class minibatch_std_concat_layer(nn.Module):
             vals = torch.sqrt(vals + 1e-8)
             vals = torch.mean(torch.mean(torch.mean(vals, dim=1), dim=1), dim=1)
             vals = vals.view(-1, 1, 1, 1)
-            vals = vals.repeat(self.n)
+            vals = vals.repeat(self.n, 1, 1, 1)
 
             # target_shape[1] = self.n
             # vals = vals.view(self.n, self.shape[1]/self.n, self.shape[2], self.shape[3])
