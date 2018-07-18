@@ -294,10 +294,11 @@ class trainer:
         interpolates = Variable(interpolates, requires_grad=True)
 
         disc_interpolates = self.D(interpolates)
+        mixed_loss = torch.sum(disc_interpolates)
 
-        gradients = grad(outputs=disc_interpolates, inputs=interpolates,
-            grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
-                disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
+        gradients = grad(outputs=mixed_loss, inputs=interpolates,
+            grad_outputs=torch.ones(mixed_loss.size()).cuda() if self.use_cuda else torch.ones(
+                mixed_loss.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
         gradients = gradients.view(gradients.size(0), -1)
 
         gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * iwass_lambda
@@ -354,7 +355,7 @@ class trainer:
                 if self.flag_wgan:
                     loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
                     loss_d_fake = self.fx_tilde
-                    # gp = self.calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
+                    gp = self.calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
                     loss_d = torch.mean(loss_d_real + loss_d_fake )
                 else:
                     loss_d = self.mse(self.fx, self.real_label) + self.mse(self.fx_tilde, self.fake_label)
