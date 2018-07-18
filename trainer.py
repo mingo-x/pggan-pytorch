@@ -296,13 +296,18 @@ class trainer:
         disc_interpolates = self.D(interpolates)
         mixed_loss = torch.sum(disc_interpolates)
 
-        gradients = grad(outputs=mixed_loss, inputs=interpolates,
-            grad_outputs=torch.ones(mixed_loss.size()).cuda() if self.use_cuda else torch.ones(
-                mixed_loss.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
+        gradients = grad(outputs=disc_interpolates, inputs=interpolates,
+            grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
+                disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
+
+        # gradients = grad(outputs=mixed_loss, inputs=interpolates,
+        #     grad_outputs=torch.ones(mixed_loss.size()).cuda() if self.use_cuda else torch.ones(
+        #         mixed_loss.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
+        
         gradients = gradients.view(gradients.size(0), -1)
 
         gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * iwass_lambda
-        return gradient_penalty
+        return gradient_penalty, torch.mean(disc_interpolates)
 
 
     def train(self):
@@ -355,7 +360,7 @@ class trainer:
                 if self.flag_wgan:
                     loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
                     loss_d_fake = self.fx_tilde
-                    gp = self.calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
+                    gp, mixed_score = self.calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
                     loss_d = torch.mean(loss_d_real + loss_d_fake )
                 else:
                     loss_d = self.mse(self.fx, self.real_label) + self.mse(self.fx_tilde, self.fake_label)
@@ -374,8 +379,8 @@ class trainer:
                 loss_g.backward()
                 self.opt_g.step()
                 # logging.
-                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(
-                    self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0])
+                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | mixed_score: {14:.4f} | [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(
+                    self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0], mixed_score.data[0])
                 tqdm.write(log_msg)
 
                 # save model.
