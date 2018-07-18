@@ -13,7 +13,7 @@ import tf_recorder as tensorboard
 import utils as utils
 import numpy as np
 import monotonic
-# from torchsummary import summary
+from torchsummary import summary
 
 
 class trainer:
@@ -311,6 +311,9 @@ class trainer:
             self.z_test = self.z_test.cuda()
         self.z_test = Variable(self.z_test, volatile=True)
         self.z_test.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
+
+        summary(self.G.module.model, input_size=(512))
+        summary(self.D.module.model, input_size=(512, 4, 4))
         
         for step in range(int(floor(self.resl)), self.max_resl+1+5):
             if self.phase == 'init':
