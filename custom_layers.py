@@ -63,7 +63,7 @@ class minibatch_std_concat_layer(nn.Module):
 
     def forward(self, x):
         shape = list(x.size())
-        self.n = torch.min(self.n, shape[0])
+        self.n = min(self.n, shape[0])
         target_shape = copy.deepcopy(shape)
         vals = self.adjusted_std(x, dim=0, keepdim=True)
         if self.averaging == 'all':
