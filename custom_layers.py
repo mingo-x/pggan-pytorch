@@ -101,10 +101,10 @@ class pixelwise_norm_layer(nn.Module):
 
 # for equalized-learning rate.
 class equalized_conv2d(nn.Module):
-    def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming', bias=False):
+    def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming', bias=False, a=0.):
         super(equalized_conv2d, self).__init__()
         self.conv = nn.Conv2d(c_in, c_out, k_size, stride, pad, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.conv.weight, a=0.)
+        if initializer == 'kaiming':    kaiming_normal(self.conv.weight, a=a)
         # elif initializer == 'xavier':   xavier_normal(self.conv.weight)
 
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))

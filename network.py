@@ -9,8 +9,8 @@ from parse import parse
 
 
 # defined for code simplicity.
-def deconv(layers, c_in, c_out, k_size, stride=1, pad=0, leaky=True, bn=False, wn=False, pixel=False, only=False):
-    if wn:  layers.append(equalized_conv2d(c_in, c_out, k_size, stride, pad))
+def deconv(layers, c_in, c_out, k_size, stride=1, pad=0, leaky=True, bn=False, wn=False, pixel=False, only=False, a=0.):
+    if wn:  layers.append(equalized_conv2d(c_in, c_out, k_size, stride, pad, a=a))
     else:   layers.append(nn.Conv2d(c_in, c_out, k_size, stride, pad))
     if not only:
         if leaky:   layers.append(nn.LeakyReLU(0.2))
@@ -117,7 +117,7 @@ class Generator(nn.Module):
     
     def to_rgb_block(self, c_in):
         layers = []
-        layers = deconv(layers, c_in, self.nc, 1, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise, only=True)
+        layers = deconv(layers, c_in, self.nc, 1, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise, only=True, a=1.)
         if self.flag_tanh:  layers.append(nn.Tanh())
         return nn.Sequential(*layers)
 
@@ -217,7 +217,7 @@ class Discriminator(nn.Module):
         layers = []
         layers.append(minibatch_std_concat_layer())
         layers = conv(layers, ndim+1, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
-        layers = linear(layers, ndim*4*4, ndim, sig=False, wn=True, leaky=True)
+        layers = linear(layers, ndim*4*4, ndim, sig=False, wn=True, leaky=True, a=0.)
         # layers = conv(layers, ndim, ndim, 4, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
         layers = linear(layers, ndim, 1, sig=self.flag_sigmoid, wn=self.flag_wn)
         return  nn.Sequential(*layers), ndim
