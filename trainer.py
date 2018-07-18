@@ -296,13 +296,13 @@ class trainer:
         disc_interpolates = self.D(interpolates)
         mixed_loss = torch.sum(disc_interpolates)
 
-        gradients = grad(outputs=disc_interpolates, inputs=interpolates,
-            grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
-                disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
+        # gradients = grad(outputs=disc_interpolates, inputs=interpolates,
+        #     grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
+        #         disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
 
-        # gradients = grad(outputs=mixed_loss, inputs=interpolates,
-        #     grad_outputs=torch.ones(mixed_loss.size()).cuda() if self.use_cuda else torch.ones(
-        #         mixed_loss.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
+        gradients = grad(outputs=mixed_loss, inputs=interpolates,
+            grad_outputs=torch.ones(mixed_loss.size()).cuda() if self.use_cuda else torch.ones(
+                mixed_loss.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
         
         gradients = gradients.view(gradients.size(0), -1)
 
