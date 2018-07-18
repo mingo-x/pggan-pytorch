@@ -141,7 +141,7 @@ class View(nn.Module):
 
 
 class equalized_linear(nn.Module):
-    def __init__(self, c_in, c_out, initializer='kaiming', a=1.):
+    def __init__(self, c_in, c_out, initializer='kaiming', a=1., reshape=False):
         super(equalized_linear, self).__init__()
         self.linear = nn.Linear(c_in, c_out, bias=False)
         if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=a)
@@ -151,10 +151,15 @@ class equalized_linear(nn.Module):
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
         self.scale = (torch.mean(self.linear.weight.data ** 2)) ** 0.5
         self.linear.weight.data.copy_(self.linear.weight.data/self.scale)
+
+        self.reshape = reshape
         
     def forward(self, x):
         x = self.linear(x.mul(self.scale))
-        return x + self.bias.view(1,-1).expand_as(x)
+        x = x + self.bias.view(1,-1).expand_as(x)
+        if self.reshape:
+            x = x.view(-1, 512, 4, 4)
+        return x
 
 
 # ref: https://github.com/github-pengge/PyTorch-progressive_growing_of_gans/blob/master/models/base_model.py

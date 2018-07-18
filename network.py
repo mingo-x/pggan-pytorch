@@ -32,10 +32,8 @@ def conv(layers, c_in, c_out, k_size, stride=1, pad=0, leaky=True, bn=False, wn=
 
 def linear(layers, c_in, c_out, sig=True, wn=False, reshape=False, leaky=False, pixel=False, a=1.):
     layers.append(Flatten())
-    if wn:      layers.append(equalized_linear(c_in, c_out, a=a))
+    if wn:      layers.append(equalized_linear(c_in, c_out, a=a, reshape=reshape))
     else:       layers.append(Linear(c_in, c_out))
-    if reshape:
-        layers.append(View(-1, 4, 4))
     if sig:     layers.append(nn.Sigmoid())
     if leaky:   layers.append(nn.LeakyReLU(0.2))
     if pixel:   layers.append(pixelwise_norm_layer())
