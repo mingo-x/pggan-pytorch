@@ -36,7 +36,7 @@ parser.add_argument('--stab_tick', type=int, default=600)       # stabilization 
 parser.add_argument('--flag_wn', type=bool, default=True)           # use of equalized-learning rate.
 parser.add_argument('--flag_bn', type=bool, default=False)          # use of batch-normalization. (not recommended)
 parser.add_argument('--flag_pixelwise', type=bool, default=True)    # use of pixelwise normalization for generator.
-parser.add_argument('--flag_gdrop', type=bool, default=True)        # use of generalized dropout layer for discriminator.
+parser.add_argument('--flag_gdrop', type=bool, default=False)        # use of generalized dropout layer for discriminator.
 parser.add_argument('--flag_leaky', type=bool, default=True)        # use of leaky relu instead of relu.
 parser.add_argument('--flag_tanh', type=bool, default=False)        # use of tanh at the end of the generator.
 parser.add_argument('--flag_sigmoid', type=bool, default=False)     # use of sigmoid at the end of the discriminator.

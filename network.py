@@ -86,7 +86,7 @@ class Generator(nn.Module):
         ndim = self.ngf
         if self.flag_norm_latent:
             layers.append(pixelwise_norm_layer())
-        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn, reshape=True, leaky=True, pixel=True, a=15.)
+        layers = linear(layers, self.nz, self.nz*4*4, sig=False, wn=self.flag_wn, reshape=True, leaky=True, pixel=True, a=15.**0.5)
         # layers = deconv(layers, self.nz, ndim, 4, 1, 3, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         layers = deconv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, self.flag_pixelwise)
         return  nn.Sequential(*layers), ndim
@@ -240,7 +240,7 @@ class Discriminator(nn.Module):
             layers = conv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
             layers = conv(layers, ndim, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
         
-        layers.append(nn.AvgPool2d(kernel_size=2))       # scale up by factor of 2.0
+        layers.append(nn.AvgPool2d(kernel_size=2))       # scale down by factor of 2.0
         return  nn.Sequential(*layers), ndim, layer_name
     
     def from_rgb_block(self, ndim):

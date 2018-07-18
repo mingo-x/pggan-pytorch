@@ -82,18 +82,18 @@ class minibatch_std_concat_layer(nn.Module):
             vals = torch.FloatTensor([self.adjusted_std(x)])
         else:                                                           # self.averaging == 'group'
             target_shape[1] = 1
-            vals = x.view(self.n, -1, shape[1], shape[2], shape[3])
-            vals = vals - torch.mean(vals, dim=0, keepdim=True)
-            vals = torch.mean(vals**2, dim=0)
-            vals = torch.sqrt(vals + 1e-8)
-            vals = torch.mean(torch.mean(torch.mean(vals, dim=1), dim=1), dim=1)
-            vals = vals.view(-1, 1, 1, 1)
-            vals = vals.repeat(self.n, 1, 1, 1)
+            vals = x.view(self.n, -1, shape[1], shape[2], shape[3])  # GMCHW
+            vals = vals - torch.mean(vals, dim=0, keepdim=True)  # GMCHW
+            vals = torch.mean(vals**2, dim=0)  # MCHW
+            vals = torch.sqrt(vals + 1e-8)  # MCHW
+            vals = torch.mean(torch.mean(torch.mean(vals, dim=1), dim=1), dim=1)  # M
+            vals = vals.view(-1, 1, 1, 1)  # M111
+            vals = vals.repeat(self.n, 1, 1, 1)  # N111
 
             # target_shape[1] = self.n
             # vals = vals.view(self.n, self.shape[1]/self.n, self.shape[2], self.shape[3])
             # vals = mean(vals, axis=0, keepdim=True).view(1, self.n, 1, 1)
-        vals = vals.expand(*target_shape)
+        vals = vals.expand(*target_shape)  # N1HW
         return torch.cat([x, vals], 1)
 
     def __repr__(self):
@@ -131,9 +131,9 @@ class equalized_deconv2d(nn.Module):
         super(equalized_deconv2d, self).__init__()
         self.deconv = nn.ConvTranspose2d(c_in, c_out, k_size, stride, pad, bias=False)
         if initializer == 'kaiming':    kaiming_normal(self.deconv.weight, a=0.)
-        elif initializer == 'xavier':   xavier_normal(self.deconv.weight)
+        # elif initializer == 'xavier':   xavier_normal(self.deconv.weight)
         
-        deconv_w = self.deconv.weight.data.clone()
+        # deconv_w = self.deconv.weight.data.clone()
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
         self.scale = (torch.mean(self.deconv.weight.data ** 2)) ** 0.5
         self.deconv.weight.data.copy_(self.deconv.weight.data/self.scale)
