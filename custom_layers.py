@@ -80,9 +80,17 @@ class minibatch_std_concat_layer(nn.Module):
             target_shape[1] = 1
             vals = torch.FloatTensor([self.adjusted_std(x)])
         else:                                                           # self.averaging == 'group'
-            target_shape[1] = self.n
-            vals = vals.view(self.n, self.shape[1]/self.n, self.shape[2], self.shape[3])
-            vals = mean(vals, axis=0, keepdim=True).view(1, self.n, 1, 1)
+            target_shape[1] = 1
+            vals = x.view(self.n, -1, self.shape[1], self.shape[2], self.shape[3])
+            vals -= torch.mean(vals, dim=0, keepdim=True)
+            vals = torch.mean(vals**2, dim=0)
+            vals = torch.sqrt(vals + 1e-8)
+            vals = torch.mean(torch.mean(torch.mean(vals, dim=1), dim=1), dim=1)
+            vals = vals.view(-1, 1, 1, 1)
+
+            # target_shape[1] = self.n
+            # vals = vals.view(self.n, self.shape[1]/self.n, self.shape[2], self.shape[3])
+            # vals = mean(vals, axis=0, keepdim=True).view(1, self.n, 1, 1)
         vals = vals.expand(*target_shape)
         return torch.cat([x, vals], 1)
 

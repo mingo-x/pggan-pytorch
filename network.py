@@ -213,7 +213,7 @@ class Discriminator(nn.Module):
         # add minibatch_std_concat_layer later.
         ndim = self.ndf
         layers = []
-        layers.append(minibatch_std_concat_layer())
+        layers.append(minibatch_std_concat_layer('group4'))
         layers = conv(layers, ndim+1, ndim, 3, 1, 1, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
         layers = linear(layers, ndim*4*4, ndim, sig=False, wn=True, leaky=True, a=0.)
         # layers = conv(layers, ndim, ndim, 4, 1, 0, self.flag_leaky, self.flag_bn, self.flag_wn, pixel=False)
