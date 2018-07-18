@@ -395,7 +395,7 @@ class trainer:
                     utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
 
                 # tensorboard visualization.
-                if self.use_tb:
+                if self.use_tb and self.globalIter%self.config.display_tb_every == 0:
                     x_test = self.G(self.z_test)
                     self.tb.add_scalar('data/real_score', real_score.data[0], self.globalIter)
                     self.tb.add_scalar('data/fake_score', fake_score.data[0], self.globalIter)
