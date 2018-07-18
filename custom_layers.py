@@ -83,7 +83,7 @@ class minibatch_std_concat_layer(nn.Module):
         else:                                                           # self.averaging == 'group'
             target_shape[1] = 1
             vals = x.view(self.n, -1, shape[1], shape[2], shape[3])
-            vals -= torch.mean(vals, dim=0, keepdim=True)
+            vals = vals - torch.mean(vals, dim=0, keepdim=True)
             vals = torch.mean(vals**2, dim=0)
             vals = torch.sqrt(vals + 1e-8)
             vals = torch.mean(torch.mean(torch.mean(vals, dim=1), dim=1), dim=1)
