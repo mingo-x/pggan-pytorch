@@ -312,7 +312,7 @@ class trainer:
         self.z_test = Variable(self.z_test, volatile=True)
         self.z_test.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
 
-        summary(self.G.module.model, input_size=(512))
+        summary(self.G.module.model, input_size=(512, ))
         summary(self.D.module.model, input_size=(512, 4, 4))
         
         for step in range(int(floor(self.resl)), self.max_resl+1+5):
@@ -363,6 +363,8 @@ class trainer:
                 self.opt_d.step()
 
                 # update generator.
+                self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
+                self.x_tilde = self.G(self.z)
                 fx_tilde = self.D(self.x_tilde)
                 if self.flag_wgan:
                     loss_g = -torch.mean(fx_tilde)
