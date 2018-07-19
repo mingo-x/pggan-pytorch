@@ -32,7 +32,7 @@ test_model.module.load_state_dict(checkpoint['state_dict'])
 
 # create folder.
 for i in range(1000):
-    name = 'results/generate/try_{}'.format(i)
+    name = 'repo/generate/try_{}'.format(i)
     if not os.path.exists(name):
         os.system('mkdir -p {}'.format(name))
         print(name)
