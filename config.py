@@ -21,7 +21,7 @@ parser.add_argument('--restore_phase', type=str, default='final')
 parser.add_argument('--lr', type=float, default=0.001)          # learning rate.
 parser.add_argument('--lr_decay', type=float, default=1.)     # learning rate decay at every resolution transition.
 parser.add_argument('--eps_drift', type=float, default=0.001)   # coeff for the drift loss.
-parser.add_argument('--smoothing', type=float, default=0.997)   # smoothing factor for smoothed generator.
+parser.add_argument('--smoothing', type=float, default=0.999)   # smoothing factor for smoothed generator.
 parser.add_argument('--nc', type=int, default=3)                # number of input channel.
 parser.add_argument('--nz', type=int, default=512)              # input dimension of noise.
 parser.add_argument('--ngf', type=int, default=512)             # feature dimension of final layer of generator.

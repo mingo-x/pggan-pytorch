@@ -55,6 +55,7 @@ class trainer:
         
         # network and cirterion
         self.G = net.Generator(config)
+        self.Gs = net.Generator(config)
         self.D = net.Discriminator(config)
         self.mse = torch.nn.MSELoss()
         if self.use_cuda:
@@ -62,6 +63,7 @@ class trainer:
             torch.cuda.manual_seed(config.random_seed)
             if config.n_gpu==1:
                 self.G = torch.nn.DataParallel(self.G).cuda(device=0)
+                self.Gs = torch.nn.DataParallel(self.Gs).cuda(device=0)
                 self.D = torch.nn.DataParallel(self.D).cuda(device=0)
             else:
                 gpus = []
@@ -171,7 +173,7 @@ class trainer:
                 self.flag_flush_gen = False
                 self.G.module.flush_network()   # flush G
                 print(self.G.module.model)
-                #self.Gs.module.flush_network()         # flush Gs
+                self.Gs.module.flush_network()         # flush Gs
                 self.fadein['gen'] = None
                 self.complete['gen'] = 0.0
 
@@ -190,6 +192,7 @@ class trainer:
             if floor(self.resl) != prev_resl and floor(self.resl)<self.max_resl+1:
                 self.lr = self.lr * float(self.config.lr_decay)
                 self.G.module.grow_network(floor(self.resl))
+                self.Gs.module.grow_network(floor(self.resl))
                 self.D.module.grow_network(floor(self.resl))
                 self.renew_everything()
                 self.fadein['gen'] = self.G.module.model.fadein_block
@@ -236,6 +239,7 @@ class trainer:
         # ship new model to cuda.
         if self.use_cuda:
             self.G = self.G.cuda()
+            self.Gs = self.Gs.cuda()
             self.D = self.D.cuda()
         
         # optimizer
@@ -321,6 +325,8 @@ class trainer:
 
         # summary(self.G.module.model, input_size=(512, ))
         # summary(self.D.module.model, input_size=(3, 4, 4))
+
+        net.soft_copy_param(self.Gs, self.G, 1.)
         
         for step in range(int(floor(self.resl)), self.max_resl+1+5):
             if self.phase == 'init':
@@ -384,16 +390,20 @@ class trainer:
                     self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0], mixed_score.data[0], mixed_norm.data[0])
                 tqdm.write(log_msg)
 
+                net.soft_copy_param(self.Gs, self.G, 1-self.config.smoothing)
+
                 # save model.
                 self.snapshot('repo/model')
 
                 # save image grid.
                 if self.globalIter%self.config.save_img_every == 0:
                     x_test = self.G(self.z_test)
+                    Gs_test = self.Gs(self.z_test)
                     os.system('mkdir -p repo/save/grid')
                     utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
-                    os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
-                    utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
+                    utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
+                    # os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
+                    # utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
 
                 # tensorboard visualization.
                 if self.use_tb and self.globalIter%self.config.display_tb_every == 0:
