@@ -58,7 +58,12 @@ def soft_copy_param(target_link, source_link, tau):
     target_modules = dict(target_link.module.model.named_children())
     for name, module in source_link.module.model.named_children():
         print(name)
-        target_modules[name].load_state_dict(module.state_dict())
+        new_state_dict = {}
+        old_state_dict = target_modules[name].state_dict()
+        src_state_dict = module.state_dict()
+        for state in src_state_dict:
+            new_state_dict[state] = old_state_dict[state] * (1. - tau) + src_state_dict[state] * tau
+        target_modules[name].load_state_dict(new_state_dict)
 
     exit()
 
