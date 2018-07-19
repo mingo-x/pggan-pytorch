@@ -14,6 +14,7 @@ import utils as utils
 import numpy as np
 import monotonic
 from torchsummary import summary
+from PIL import Image
 
 
 class trainer:
@@ -248,7 +249,7 @@ class trainer:
         if self.phase == 'trns' and floor(self.resl)>2 and floor(self.resl)<=self.max_resl:
             alpha = self.complete['gen']/100.0
             transform = transforms.Compose( [   transforms.ToPILImage(),
-                                                transforms.Resize(size=int(pow(2,floor(self.resl)-1)), interpolation=0),      # 0: nearest
+                                                transforms.Resize(size=int(pow(2,floor(self.resl)-1)), interpolation=Image.BILINEAR),      # 0: nearest
                                                 transforms.Resize(size=int(pow(2,floor(self.resl))), interpolation=0),      # 0: nearest
                                                 transforms.ToTensor(),
                                             ] )

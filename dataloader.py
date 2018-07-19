@@ -30,7 +30,7 @@ class dataloader:
         self.dataset = ImageFolder(
                     root=self.root,
                     transform=transforms.Compose(   [
-                                                    transforms.Resize(size=(self.imsize,self.imsize), interpolation=Image.NEAREST),
+                                                    transforms.Resize(size=(self.imsize,self.imsize), interpolation=Image.BILINEAR),
                                                     transforms.ToTensor(),
                                                     ]))       
 
