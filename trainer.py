@@ -380,6 +380,8 @@ class trainer:
                 loss_d.backward()
                 self.opt_d.step()
 
+                net.soft_copy_param(self.Gs, self.G, 1-self.config.smoothing)
+
                 # update generator.
                 self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
                 self.x_tilde = self.G(self.z)
@@ -394,8 +396,6 @@ class trainer:
                 log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | mixed_score: {14:.4f} | mixed_norm: {15:.4f}| [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(
                     self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0], mixed_score.data[0], mixed_norm.data[0])
                 tqdm.write(log_msg)
-
-                net.soft_copy_param(self.Gs, self.G, 1-self.config.smoothing)
 
                 # save model.
                 self.snapshot('repo/model')
@@ -413,7 +413,7 @@ class trainer:
 
                 # tensorboard visualization.
                 if self.use_tb and self.globalIter%self.config.display_tb_every == 0:
-                    x_test = self.G(self.z_test)
+                    # x_test = self.G(self.z_test)
                     self.tb.add_scalar('data/real_score', real_score.data[0], self.globalIter)
                     self.tb.add_scalar('data/fake_score', fake_score.data[0], self.globalIter)
                     self.tb.add_scalar('data/mixed_score', mixed_score.data[0], self.globalIter)
@@ -422,9 +422,9 @@ class trainer:
                     self.tb.add_scalar('data/loss_d', loss_d.data[0], self.globalIter)
                     self.tb.add_scalar('tick/lr', self.lr, self.globalIter)
                     self.tb.add_scalar('tick/cur_resl', int(pow(2,floor(self.resl))), self.globalIter)
-                    self.tb.add_image_grid('grid/x_test', 4, utils.adjust_dyn_range(x_test.data.float(), [-1,1], [0,1]), self.globalIter)
-                    self.tb.add_image_grid('grid/x_tilde', 4, utils.adjust_dyn_range(self.x_tilde.data.float(), [-1,1], [0,1]), self.globalIter)
-                    self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
+                    # self.tb.add_image_grid('grid/x_test', 4, utils.adjust_dyn_range(x_test.data.float(), [-1,1], [0,1]), self.globalIter)
+                    # self.tb.add_image_grid('grid/x_tilde', 4, utils.adjust_dyn_range(self.x_tilde.data.float(), [-1,1], [0,1]), self.globalIter)
+                    # self.tb.add_image_grid('grid/x_intp', 4, utils.adjust_dyn_range(self.x.data.float(), [-1,1], [0,1]), self.globalIter)
 
             if self.phase == 'init':
                 self.phase = 'stab'
