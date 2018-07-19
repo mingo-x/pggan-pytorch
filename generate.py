@@ -1,7 +1,4 @@
-# generate interpolated images.
-
-
-import os,sys
+import os
 import torch
 from config import config
 from torch.autograd import Variable
@@ -9,7 +6,7 @@ import utils as utils
 
 
 use_cuda = True
-checkpoint_path = '/srv/glusterfs/xieya/repo/model/gen_R7_T11700.pth.tar'
+checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/gs_R2_T600.pth.tar'
 n_intp = 50
 
 
@@ -35,7 +32,7 @@ test_model.module.load_state_dict(checkpoint['state_dict'])
 
 # create folder.
 for i in range(1000):
-    name = 'repo/generate/try_{}'.format(i)
+    name = 'results/generate/try_{}'.format(i)
     if not os.path.exists(name):
         os.system('mkdir -p {}'.format(name))
         break;
