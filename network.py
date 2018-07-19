@@ -55,6 +55,11 @@ def soft_copy_param(target_link, source_link, tau):
         target_params[param_name].data = target_params[param_name].data.mul(1.0-tau)
         target_params[param_name].data = target_params[param_name].data.add(param.data.mul(tau))
 
+    target_modules = dict(target_link.module.model.named_children())
+    for name, module in source_link.module.model.named_children():
+        print(name)
+        target_modules[name].load_state_dict(module.state_dict())
+
     exit()
 
 def get_module_names(model):
