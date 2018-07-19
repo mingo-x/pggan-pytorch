@@ -15,6 +15,7 @@ import numpy as np
 import monotonic
 from torchsummary import summary
 from PIL import Image
+import pickle
 
 
 class trainer:
@@ -401,6 +402,7 @@ class trainer:
                     Gs_test = self.Gs(self.z_test)
                     os.system('mkdir -p repo/save/grid')
                     # utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
+                    utils.save_image_grid(self.x.data, 'repo/save/grid/{}_{}_G{}_D{}_x.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     # os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
                     # utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
@@ -438,22 +440,38 @@ class trainer:
                 'optimizer' : self.opt_d.state_dict(),
             }
             return state
+        elif target == 'gs':
+            state = {
+                'resl' : self.resl,
+                'state_dict' : self.Gs.module.state_dict(),
+            }
+            return state
 
 
     def snapshot(self, path):
         if not os.path.exists(path):
             os.system('mkdir -p {}'.format(path))
-        # save every 100 tick if the network is in stab phase.
-        ndis = 'dis_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
-        ngen = 'gen_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        filename = 'R{}_T{}.pkl'.format(int(floor(self.resl)), self.globalTick)
+        file_path = os.path.join(path, filename)
         if self.globalTick != 0 and self.globalTick%50==0:
             if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
-                save_path = os.path.join(path, ndis)
-                if not os.path.exists(save_path):
-                    torch.save(self.get_state('dis'), save_path)
-                    save_path = os.path.join(path, ngen)
-                    torch.save(self.get_state('gen'), save_path)
-                    print('[snapshot] model saved @ {}'.format(path))
+                with open(file_path, 'wb') as file:
+                    pickle.dump((self.G, self.Gs, self.D), file, protocol=pickle.HIGHEST_PROTOCOL)
+                print('[snapshot] model saved @ {}'.format(file_path))
+        # save every 100 tick if the network is in stab phase.
+        # ndis = 'dis_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        # ngen = 'gen_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        # ngs = 'gs_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        # if self.globalTick != 0 and self.globalTick%50==0:
+        #     if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
+        #         save_path = os.path.join(path, ndis)
+        #         if not os.path.exists(save_path):
+        #             torch.save(self.get_state('dis'), save_path)
+        #             save_path = os.path.join(path, ngen)
+        #             torch.save(self.get_state('gen'), save_path)
+        #             save_path = os.path.join(path, ngs)
+        #             torch.save(self.get_state('gs'), save_path)
+        #             print('[snapshot] model saved @ {}'.format(path))
 
 
 ## perform training.
