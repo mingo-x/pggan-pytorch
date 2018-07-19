@@ -35,6 +35,7 @@ for i in range(1000):
     name = 'results/generate/try_{}'.format(i)
     if not os.path.exists(name):
         os.system('mkdir -p {}'.format(name))
+        print(name)
         break;
 
 if use_cuda:
