@@ -51,8 +51,11 @@ def soft_copy_param(target_link, source_link, tau):
     ''' soft-copy parameters of a link to another link. '''
     target_params = dict(target_link.named_parameters())
     for param_name, param in source_link.named_parameters():
+        print(param_name)
         target_params[param_name].data = target_params[param_name].data.mul(1.0-tau)
         target_params[param_name].data = target_params[param_name].data.add(param.data.mul(tau))
+
+    exit()
 
 def get_module_names(model):
     names = []
