@@ -150,6 +150,7 @@ class trainer:
         if self.fadein['gen'] is not None and self.fadein['dis'] is not None:
             if self.resl%1.0 < (self.trns_tick)*delta:  # [0, 0.5)
                 self.fadein['gen'].update_alpha(d_alpha)
+                self.fadein['gs'].update_alpha(d_alpha)
                 self.fadein['dis'].update_alpha(d_alpha)
                 self.complete['gen'] = self.fadein['gen'].alpha*100
                 self.complete['dis'] = self.fadein['dis'].alpha*100
@@ -170,12 +171,14 @@ class trainer:
             if self.flag_flush_gen and self.flag_flush_dis and self.resl%1.0 >= (self.trns_tick)*delta and prev_resl!=2:
                 if self.fadein['gen'] is not None:
                     self.fadein['gen'].update_alpha(d_alpha)
+                    self.fadein['gs'].update_alpha(d_alpha)
                     self.complete['gen'] = self.fadein['gen'].alpha*100
                 self.flag_flush_gen = False
                 self.G.module.flush_network()   # flush G
                 print(self.G.module.model)
                 self.Gs.module.flush_network()         # flush Gs
                 self.fadein['gen'] = None
+                self.fadein['gs'] = None
                 self.complete['gen'] = 0.0
 
                 if self.fadein['dis'] is not None:
@@ -197,6 +200,7 @@ class trainer:
                 self.D.module.grow_network(floor(self.resl))
                 self.renew_everything()
                 self.fadein['gen'] = self.G.module.model.fadein_block
+                self.fadein['gs'] = self.Gs.module.model.fadein_block
                 self.fadein['dis'] = self.D.module.model.fadein_block
                 self.flag_flush_gen = True
                 self.flag_flush_dis = True
@@ -398,10 +402,10 @@ class trainer:
 
                 # save image grid.
                 if self.globalIter%self.config.save_img_every == 0:
-                    # x_test = self.G(self.z_test)
+                    x_test = self.G(self.z_test)
                     Gs_test = self.Gs(self.z_test)
                     os.system('mkdir -p repo/save/grid')
-                    # utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
+                    utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     utils.save_image_grid(self.x.data, 'repo/save/grid/{}_{}_G{}_D{}_x.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     # os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
@@ -451,27 +455,27 @@ class trainer:
     def snapshot(self, path):
         if not os.path.exists(path):
             os.system('mkdir -p {}'.format(path))
-        filename = 'R{}_T{}.pkl'.format(int(floor(self.resl)), self.globalTick)
-        file_path = os.path.join(path, filename)
-        if self.globalTick != 0 and self.globalTick%50==0:
-            if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
-                with open(file_path, 'wb') as file:
-                    pickle.dump((self.G, self.Gs, self.D), file, protocol=pickle.HIGHEST_PROTOCOL)
-                print('[snapshot] model saved @ {}'.format(file_path))
-        # save every 100 tick if the network is in stab phase.
-        # ndis = 'dis_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
-        # ngen = 'gen_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
-        # ngs = 'gs_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        # filename = 'R{}_T{}.pkl'.format(int(floor(self.resl)), self.globalTick)
+        # file_path = os.path.join(path, filename)
         # if self.globalTick != 0 and self.globalTick%50==0:
         #     if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
-        #         save_path = os.path.join(path, ndis)
-        #         if not os.path.exists(save_path):
-        #             torch.save(self.get_state('dis'), save_path)
-        #             save_path = os.path.join(path, ngen)
-        #             torch.save(self.get_state('gen'), save_path)
-        #             save_path = os.path.join(path, ngs)
-        #             torch.save(self.get_state('gs'), save_path)
-        #             print('[snapshot] model saved @ {}'.format(path))
+        #         with open(file_path, 'wb') as file:
+        #             pickle.dump((self.G, self.Gs, self.D), file, protocol=pickle.HIGHEST_PROTOCOL)
+        #         print('[snapshot] model saved @ {}'.format(file_path))
+        # save every 100 tick if the network is in stab phase.
+        ndis = 'dis_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        ngen = 'gen_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        ngs = 'gs_R{}_T{}.pth.tar'.format(int(floor(self.resl)), self.globalTick)
+        if self.globalTick != 0 and self.globalTick%50==0:
+            if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
+                save_path = os.path.join(path, ndis)
+                if not os.path.exists(save_path):
+                    torch.save(self.get_state('dis'), save_path)
+                    save_path = os.path.join(path, ngen)
+                    torch.save(self.get_state('gen'), save_path)
+                    save_path = os.path.join(path, ngs)
+                    torch.save(self.get_state('gs'), save_path)
+                    print('[snapshot] model saved @ {}'.format(path))
 
 
 ## perform training.
