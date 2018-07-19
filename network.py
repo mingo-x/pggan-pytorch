@@ -50,12 +50,13 @@ def deepcopy_module(module, target):
 def soft_copy_param(target_link, source_link, tau):
     ''' soft-copy parameters of a link to another link. '''
     target_params = dict(target_link.named_parameters())
+    i = 0
     for param_name, param in source_link.named_parameters():
-        print(target_params[param_name].data)
+        if i==1:
+            print(target_params[param_name].data)
         target_params[param_name].data = target_params[param_name].data.mul(1.0-tau)
         target_params[param_name].data = target_params[param_name].data.add(param.data.mul(tau))
-        print(target_params[param_name].data)
-    exit()
+        i += 1
 
 def get_module_names(model):
     names = []
