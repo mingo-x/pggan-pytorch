@@ -54,8 +54,7 @@ def soft_copy_param(target_link, source_link, tau):
     for param_name, param in source_link.named_parameters():
         if i==1:
             print(target_params[param_name].data)
-        target_params[param_name].data = target_params[param_name].data.mul(1.0-tau)
-        target_params[param_name].data = target_params[param_name].data.add(param.data.mul(tau))
+        target_params[param_name].data.copy_(target_params[param_name].data.mul(1.0-tau).add(param.data.mul(tau)))
         i += 1
 
 def get_module_names(model):
