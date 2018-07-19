@@ -397,10 +397,10 @@ class trainer:
 
                 # save image grid.
                 if self.globalIter%self.config.save_img_every == 0:
-                    x_test = self.G(self.z_test)
+                    # x_test = self.G(self.z_test)
                     Gs_test = self.Gs(self.z_test)
                     os.system('mkdir -p repo/save/grid')
-                    utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
+                    # utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     # os.system('mkdir -p repo/save/resl_{}'.format(int(floor(self.resl))))
                     # utils.save_image_single(x_test.data, 'repo/save/resl_{}/{}_{}_G{}_D{}.jpg'.format(int(floor(self.resl)),int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
