@@ -336,9 +336,8 @@ class trainer:
         x_test = self.G(self.z_test)
         Gs_test = self.Gs(self.z_test)
         os.system('mkdir -p repo/save/grid')
-        # utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.png'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']), imsize=2**self.max_resl*4)
+        utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.png'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']), imsize=2**self.max_resl*4)
         utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.png'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']), imsize=2**self.max_resl*4)
-        exit()
         
         for step in range(int(floor(self.resl)), self.max_resl+1+5):
             if self.phase == 'init':
