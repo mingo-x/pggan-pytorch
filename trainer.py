@@ -16,6 +16,7 @@ import monotonic
 from torchsummary import summary
 from PIL import Image
 import pickle
+import time
 
 
 class trainer:
@@ -61,7 +62,7 @@ class trainer:
         self.mse = torch.nn.MSELoss()
         if self.use_cuda:
             self.mse = self.mse.cuda()
-            torch.cuda.manual_seed(config.random_seed)
+            torch.cuda.manual_seed(int(time.time()))
             if config.n_gpu==1:
                 self.G = torch.nn.DataParallel(self.G).cuda(device=0)
                 self.Gs = torch.nn.DataParallel(self.Gs).cuda(device=0)
@@ -232,7 +233,7 @@ class trainer:
             self.x_tilde = self.x.cuda()
             self.real_label = self.real_label.cuda()
             self.fake_label = self.fake_label.cuda()
-            torch.cuda.manual_seed(config.random_seed)
+            torch.cuda.manual_seed(int(time.time()))
 
         # wrapping autograd Variable.
         self.x = Variable(self.x)
