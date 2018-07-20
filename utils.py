@@ -55,7 +55,7 @@ def save_image_grid(x, path, imsize=512, ngrid=4):
 
     for i in range(shape[0]):
         for j in range(shape[1]):
-            print(ndarr[i, j, 0], ndarr[i, j, 1], ndarr[i, j, 2])
+            print ndarr[i, j, 0], ',', ndarr[i, j, 1], ',', ndarr[i, j, 2]
 
     im = Image.fromarray(ndarr)
     im = im.resize((imsize,imsize), Image.NEAREST)
