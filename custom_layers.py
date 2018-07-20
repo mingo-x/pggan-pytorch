@@ -135,7 +135,7 @@ class equalized_conv2d(nn.Module):
         super(equalized_conv2d, self).__init__()
         self.conv = nn.Conv2d(c_in, c_out, k_size, stride, pad, bias=False)
         if initializer == 'kaiming':    normal(self.conv.weight)
-        fan_in = _calculate_fan_in_and_fan_out(self.conv.weight)
+        fan_in, _ = _calculate_fan_in_and_fan_out(self.conv.weight)
         gain = (2. / (1. + a ** 2)) ** 0.5
         self.scale = gain / fan_in ** 0.5
 
@@ -156,7 +156,7 @@ class equalized_deconv2d(nn.Module):
         super(equalized_deconv2d, self).__init__()
         self.deconv = nn.ConvTranspose2d(c_in, c_out, k_size, stride, pad, bias=False)
         if initializer == 'kaiming':    normal(self.deconv.weight)
-        fan_in = _calculate_fan_in_and_fan_out(self.deconv.weight)
+        fan_in, _ = _calculate_fan_in_and_fan_out(self.deconv.weight)
         gain = (2. / (1. + 0. ** 2)) ** 0.5
         self.scale = gain / fan_in ** 0.5
 
@@ -186,7 +186,7 @@ class equalized_linear(nn.Module):
         super(equalized_linear, self).__init__()
         self.linear = nn.Linear(c_in, c_out, bias=False)
         if initializer == 'kaiming':    normal(self.linear.weight)
-        fan_in = _calculate_fan_in_and_fan_out(self.linear.weight)
+        fan_in, _ = _calculate_fan_in_and_fan_out(self.linear.weight)
         gain = (2. / (1. + a ** 2)) ** 0.5
         self.scale = gain / fan_in ** 0.5
 
