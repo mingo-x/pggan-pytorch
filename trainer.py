@@ -329,7 +329,7 @@ class trainer:
         self.z_test = Variable(self.z_test, volatile=True)
         self.z_test.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
 
-        # summary(self.G.module.model, input_size=(512, ))
+        summary(self.G.module.model, input_size=(512, ))
         # summary(self.D.module.model, input_size=(3, 4, 4))
 
         net.soft_copy_param(self.Gs, self.G, 1.)
