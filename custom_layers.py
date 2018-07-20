@@ -190,6 +190,8 @@ class equalized_linear(nn.Module):
         gain = (2. / (1. + a ** 2)) ** 0.5
         self.scale = gain / fan_in ** 0.5
 
+        if reshape:
+            c_out /= 4 * 4
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
         # if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=a)
         # elif initializer == 'xavier':   torch.nn.init.xavier_normal(self.linear.weight)
@@ -202,9 +204,11 @@ class equalized_linear(nn.Module):
         
     def forward(self, x):
         x = self.linear(x.mul(self.scale))
-        x = x + self.bias.view(1,-1).expand_as(x)
         if self.reshape:
             x = x.view(-1, 512, 4, 4)
+            x = x + self.bias.view(1,-1, 1, 1).expand_as(x)
+        else:
+            x = x + self.bias.view(1,-1).expand_as(x)
         return x
 
 
