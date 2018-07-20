@@ -51,6 +51,12 @@ def save_image_grid(x, path, imsize=512, ngrid=4):
     from PIL import Image
     grid = make_image_grid(x, ngrid)
     ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).numpy()
+    shape = ndarr.shape
+
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            print(ndarr[i, j, 0], ndarr[i, j, 1], ndarr[i, j, 2])
+
     im = Image.fromarray(ndarr)
     im = im.resize((imsize,imsize), Image.NEAREST)
     im.save(path)
