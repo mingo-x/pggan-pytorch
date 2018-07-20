@@ -12,6 +12,26 @@ from PIL import Image
 import copy
 from torch.nn.init import kaiming_normal, calculate_gain, normal
 
+
+def _calculate_fan_in_and_fan_out(tensor):
+    dimensions = tensor.ndimension()
+    if dimensions < 2:
+        raise ValueError("Fan in and fan out can not be computed for tensor with less than 2 dimensions")
+
+    if dimensions == 2:  # Linear
+        fan_in = tensor.size(1)
+        fan_out = tensor.size(0)
+    else:
+        num_input_fmaps = tensor.size(1)
+        num_output_fmaps = tensor.size(0)
+        receptive_field_size = 1
+        if tensor.dim() > 2:
+            receptive_field_size = tensor[0][0].numel()
+        fan_in = num_input_fmaps * receptive_field_size
+        fan_out = num_output_fmaps * receptive_field_size
+
+    return fan_in, fan_out
+
 # same function as ConcatTable container in Torch7.
 class ConcatTable(nn.Module):
     def __init__(self, layer1, layer2):
@@ -114,12 +134,17 @@ class equalized_conv2d(nn.Module):
     def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming', bias=False, a=0.):
         super(equalized_conv2d, self).__init__()
         self.conv = nn.Conv2d(c_in, c_out, k_size, stride, pad, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.conv.weight, a=a)
-        # elif initializer == 'xavier':   xavier_normal(self.conv.weight)
+        if initializer == 'kaiming':    normal(self.conv.weight)
+        fan_in = _calculate_fan_in_and_fan_out(self.conv.weight)
+        gain = (2. / (1. + a ** 2)) ** 0.5
+        self.scale = gain / fan_in ** 0.5
 
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
-        self.scale = (torch.mean(self.conv.weight.data ** 2)) ** 0.5  # Std.
-        self.conv.weight.data.copy_(self.conv.weight.data/self.scale)  # N(0, 1)
+        # if initializer == 'kaiming':    kaiming_normal(self.conv.weight, a=a)
+        # elif initializer == 'xavier':   xavier_normal(self.conv.weight)
+
+        # self.scale = (torch.mean(self.conv.weight.data ** 2)) ** 0.5  # Std.
+        # self.conv.weight.data.copy_(self.conv.weight.data/self.scale)  # N(0, 1)
 
     def forward(self, x):
         x = self.conv(x.mul(self.scale))
@@ -130,13 +155,19 @@ class equalized_deconv2d(nn.Module):
     def __init__(self, c_in, c_out, k_size, stride, pad, initializer='kaiming'):
         super(equalized_deconv2d, self).__init__()
         self.deconv = nn.ConvTranspose2d(c_in, c_out, k_size, stride, pad, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.deconv.weight, a=0.)
+        if initializer == 'kaiming':    normal(self.deconv.weight)
+        fan_in = _calculate_fan_in_and_fan_out(self.deconv.weight)
+        gain = (2. / (1. + 0. ** 2)) ** 0.5
+        self.scale = gain / fan_in ** 0.5
+
+        self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
+        # if initializer == 'kaiming':    kaiming_normal(self.deconv.weight, a=0.)
         # elif initializer == 'xavier':   xavier_normal(self.deconv.weight)
         
         # deconv_w = self.deconv.weight.data.clone()
-        self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
-        self.scale = (torch.mean(self.deconv.weight.data ** 2)) ** 0.5
-        self.deconv.weight.data.copy_(self.deconv.weight.data/self.scale)
+        # self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
+        # self.scale = (torch.mean(self.deconv.weight.data ** 2)) ** 0.5
+        # self.deconv.weight.data.copy_(self.deconv.weight.data/self.scale)
     def forward(self, x):
         x = self.deconv(x.mul(self.scale))
         return x + self.bias.view(1,-1,1,1).expand_as(x)
@@ -154,13 +185,18 @@ class equalized_linear(nn.Module):
     def __init__(self, c_in, c_out, initializer='kaiming', a=1., reshape=False):
         super(equalized_linear, self).__init__()
         self.linear = nn.Linear(c_in, c_out, bias=False)
-        if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=a)
-        elif initializer == 'xavier':   torch.nn.init.xavier_normal(self.linear.weight)
-        
-        linear_w = self.linear.weight.data.clone()
+        if initializer == 'kaiming':    normal(self.linear.weight)
+        fan_in = _calculate_fan_in_and_fan_out(self.linear.weight)
+        gain = (2. / (1. + a ** 2)) ** 0.5
+        self.scale = gain / fan_in ** 0.5
+
         self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
-        self.scale = (torch.mean(self.linear.weight.data ** 2)) ** 0.5
-        self.linear.weight.data.copy_(self.linear.weight.data/self.scale)
+        # if initializer == 'kaiming':    kaiming_normal(self.linear.weight, a=a)
+        # elif initializer == 'xavier':   torch.nn.init.xavier_normal(self.linear.weight)
+        
+        # self.bias = torch.nn.Parameter(torch.FloatTensor(c_out).fill_(0))
+        # self.scale = (torch.mean(self.linear.weight.data ** 2)) ** 0.5
+        # self.linear.weight.data.copy_(self.linear.weight.data/self.scale)
 
         self.reshape = reshape
         
