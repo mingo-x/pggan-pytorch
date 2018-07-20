@@ -208,7 +208,7 @@ class trainer:
                 print(self.G.module.model)
                 print(self.D.module.model)
 
-            if floor(self.resl) >= self.max_resl and self.resl%1.0 >= self.trans_tick*delta:
+            if floor(self.resl) >= self.max_resl and self.resl%1.0 >= self.trns_tick*delta:
                 self.phase = 'final'
                 self.resl = self.max_resl + self.trns_tick *delta
 
@@ -332,6 +332,11 @@ class trainer:
         # summary(self.D.module.model, input_size=(3, 4, 4))
 
         net.soft_copy_param(self.Gs, self.G, 1.)
+        x_test = self.G(self.z_test)
+        Gs_test = self.Gs(self.z_test)
+        os.system('mkdir -p repo/save/grid')
+        utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
+        utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
         
         for step in range(int(floor(self.resl)), self.max_resl+1+5):
             if self.phase == 'init':
@@ -404,7 +409,7 @@ class trainer:
                 if self.globalIter%self.config.save_img_every == 0:
                     x_test = self.G(self.z_test)
                     Gs_test = self.Gs(self.z_test)
-                    os.system('mkdir -p repo/save/grid')
+                    # os.system('mkdir -p repo/save/grid')
                     utils.save_image_grid(x_test.data, 'repo/save/grid/{}_{}_G{}_D{}.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     utils.save_image_grid(self.x.data, 'repo/save/grid/{}_{}_G{}_D{}_x.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
                     utils.save_image_grid(Gs_test.data, 'repo/save/grid/{}_{}_G{}_D{}_Gs.jpg'.format(int(self.globalIter/self.config.save_img_every), self.phase, self.complete['gen'], self.complete['dis']))
