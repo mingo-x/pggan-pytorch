@@ -56,7 +56,7 @@ parser.add_argument('--beta2', type=float, default=0.99)            # beta2 for 
 
 ## display and save setting.
 parser.add_argument('--use_tb', type=bool, default=True)            # enable tensorboard visualization
-parser.add_argument('--save_img_every', type=int, default=5)       # save images every specified iteration.
+parser.add_argument('--save_img_every', type=int, default=100)       # save images every specified iteration.
 parser.add_argument('--display_tb_every', type=int, default=100)      # display progress every specified iteration.
 
 

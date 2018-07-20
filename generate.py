@@ -10,6 +10,8 @@ checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/gs_R2_T600.pth.tar'
 n_intp = 50
 max_resl = 2
 
+torch.manual_seed(1000)
+
 # load trained model.
 import network as net
 test_model = net.Generator(config)
@@ -49,7 +51,7 @@ for i in range(1, n_intp+1):
     z = Variable(z)
     fake_im = test_model.module(z)
     fname = os.path.join(name, '_gen{}.jpg'.format(i))
-    utils.save_image_single(fake_im.data, fname, imsize=pow(2,config.max_resl))
+    utils.save_image_single(fake_im.data, fname, imsize=pow(2,max_resl))
     print('saved {}-th generated image ...'.format(i))
 
 
