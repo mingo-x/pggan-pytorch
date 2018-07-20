@@ -50,14 +50,13 @@ def save_image_single(x, path, imsize=512):
 def save_image_grid(x, path, imsize=512, ngrid=4):
     from PIL import Image
     grid = make_image_grid(x, ngrid)
-    ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).numpy()
+    ndarr = grid.add(1.).mul(255. / 2.).clamp(0, 255).byte().permute(1, 2, 0).numpy()
+    
     shape = ndarr.shape
-
+    grid_np = grid.permute(1, 2, 0).numpy()
     for i in range(shape[0]):
         for j in range(shape[1]):
-            print ndarr[i, j, 0], ',', ndarr[i, j, 1], ',', ndarr[i, j, 2]
-
-    print(imsize)
+            print grid_np[i, j, 0], ',', grid_np[i, j, 1], ',', grid_np[i, j, 2]
 
     im = Image.fromarray(ndarr)
     im = im.resize((imsize,imsize), Image.NEAREST)
@@ -144,11 +143,11 @@ def make_grid(tensor, nrow=8, padding=2,
             else:
                 norm_ip(t, t.min(), t.max())
 
-        if scale_each is True:
-            for t in tensor:  # loop over mini-batch dimension
-                norm_range(t, range)
-        else:
-            norm_range(tensor, range)
+        # if scale_each is True:
+        #     for t in tensor:  # loop over mini-batch dimension
+        #         norm_range(t, range)
+        # else:
+        #     norm_range(tensor, range)
 
     # make the mini-batch of images into a grid
     nmaps = tensor.size(0)
