@@ -8,7 +8,7 @@ import utils as utils
 use_cuda = True
 checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/gs_R2_T600.pth.tar'
 n_intp = 50
-
+max_resl = 4
 
 # load trained model.
 import network as net
@@ -19,7 +19,7 @@ if use_cuda:
 else:
     torch.set_default_tensor_type('torch.FloatTensor')
 
-for resl in range(3, config.max_resl+1):
+for resl in range(3, max_resl+1):
     test_model.module.grow_network(resl)
     test_model.module.flush_network()
 print(test_model)
