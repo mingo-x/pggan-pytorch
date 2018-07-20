@@ -10,6 +10,7 @@ def main():
 	use_cuda = True
 	checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/dis_R2_T300.pth.tar'
 	img_dir = '/srv/glusterfs/xieya/dis/tf/'
+	max_resl = 4
 
 	# load trained model.
 	D = net.Discriminator(config)
