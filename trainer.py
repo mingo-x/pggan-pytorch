@@ -75,6 +75,7 @@ class trainer:
                 self.D = torch.nn.DataParallel(self.D, device_ids=gpus).cuda()  
 
         self.gen_ckpt = config.gen_ckpt
+        self.gs_ckpt = config.gs_ckpt
         self.dis_ckpt = config.dis_ckpt
         if self.gen_ckpt != '' and self.dis_ckpt != '':
             pattern = '{}gen_R{}_T{}.pth.tar'
@@ -84,13 +85,15 @@ class trainer:
             # Restore the network structure.
             for resl in xrange(3, restore_resl+1):
                 self.G.module.grow_network(resl)
+                self.Gs.module.grow_network(resl)
                 self.D.module.grow_network(resl)
-                if resl <= restore_resl:
-                    self.G.module.flush_network()
-                    self.D.module.flush_network()
+                # if resl <= restore_resl:
+                self.G.module.flush_network()
+                self.Gs.module.flush_network()
+                self.D.module.flush_network()
                     
-            for _ in xrange(int(self.resl), restore_resl):
-                self.lr = self.lr * float(self.config.lr_decay)
+            # for _ in xrange(int(self.resl), restore_resl):
+            #     self.lr = self.lr * float(self.config.lr_decay)
             print(
                 "Restored resolution", restore_resl, 
                 "Restored global tick", restore_tick, 
@@ -99,24 +102,27 @@ class trainer:
             self.globalTick = restore_tick
             # Restore the network setting.
             if self.resl != 2:
-                self.phase = config.restore_phase
+                self.phase = 'stab'
 
         # define tensors, ship model to cuda, and get dataloader.
         self.renew_everything()
         if self.gen_ckpt != '' and self.dis_ckpt != '':
             self.globalIter = floor(self.globalTick * self.TICK / self.loader.batchsize)
             gen_ckpt = torch.load(self.gen_ckpt)
+            gs_ckpt = torch.load(self.gs_ckpt)
             dis_ckpt = torch.load(self.dis_ckpt)
             self.opt_d.load_state_dict(dis_ckpt['optimizer'])
             self.opt_g.load_state_dict(gen_ckpt['optimizer'])
             print('Optimizer restored.')
             self.resl = gen_ckpt['resl']
             self.G.module.load_state_dict(gen_ckpt['state_dict'])
+            self.Gs.module.load_state_dict(gs_ckpt['state_dict'])
             self.D.module.load_state_dict(dis_ckpt['state_dict'])
             print('Model weights restored.')
             
             gen_ckpt = None
             dis_ckpt = None
+            gs_ckpt = None
 
         print ('Generator structure: ')
         print(self.G)
