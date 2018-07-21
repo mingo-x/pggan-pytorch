@@ -335,8 +335,6 @@ class trainer:
         disc_interpolates = self.D(d_interpolates)
         mixed_loss = torch.sum(disc_interpolates)
 
-        print("in shape", interpolates.size())
-        print("d shape", d_interpolates.size())
         # gradients = grad(outputs=disc_interpolates, inputs=interpolates,
         #     grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
         #         disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
