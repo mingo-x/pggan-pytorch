@@ -330,7 +330,7 @@ class trainer:
 
         # Downscale
         d_interpolates = interpolates.view(data_shape[0], data_shape[1], data_shape[2], scale, data_shape[3], scale)
-        d_interpolates = torch.mean(torch.mean(d_interpolates, axis=5), axis=3)
+        d_interpolates = torch.mean(torch.mean(d_interpolates, dim=5), dim=3)
 
         disc_interpolates = self.D(d_interpolates)
         mixed_loss = torch.sum(disc_interpolates)
