@@ -322,7 +322,7 @@ class trainer:
         scale = int(2 ** self.max_resl / real_data.size(2))
         interpolates = interpolates.view(data_shape[0], data_shape[1], data_shape[2], 1, data_shape[3], 1)
         interpolates = interpolates.expand((-1, -1, -1, scale, -1, scale))
-        interpolates = interpolates.view(data_shape)
+        interpolates = interpolates.view(data_shape[0], data_shape[1], data_shape[2]*scale, data_shape[3]*scale)
 
         if self.use_cuda:
             interpolates = interpolates.cuda()
