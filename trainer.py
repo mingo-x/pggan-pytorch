@@ -33,6 +33,7 @@ class trainer:
         self.nz = config.nz
         self.optimizer = config.optimizer
 
+        self.minibatch_repeat = 4
         self.resl = 2         # we start from 2^2 = 4
         self.lr = config.lr
         self.eps_drift = config.eps_drift
@@ -111,7 +112,7 @@ class trainer:
             self.Gs.module.flush_network()
             self.D.module.flush_network()
 
-            self.globalIter = floor(self.globalTick * self.TICK / self.loader.batchsize)
+            self.globalIter = floor(self.globalTick * self.TICK / (self.loader.batchsize * self.minibatch_repeat))
             gen_ckpt = torch.load(self.gen_ckpt)
             gs_ckpt = torch.load(self.gs_ckpt)
             dis_ckpt = torch.load(self.dis_ckpt)
@@ -155,7 +156,7 @@ class trainer:
             delta = 1.0/self.stab_tick
         else:
             delta = 1.0/(self.trns_tick+self.stab_tick)
-        d_alpha = 1.0*self.batchsize/self.trns_tick/self.TICK
+        d_alpha = 1.0*self.batchsize*self.minibatch_repeat/self.trns_tick/self.TICK
 
         # update alpha if fade-in layer exist.
         if self.fadein['gen'] is not None and self.fadein['dis'] is not None:
@@ -170,7 +171,7 @@ class trainer:
                 self.phase = 'stab'
             
         prev_kimgs = self.kimgs
-        self.kimgs = self.kimgs + self.batchsize
+        self.kimgs = self.kimgs + self.batchsize*self.minibatch_repeat
         if (self.kimgs%self.TICK) < (prev_kimgs%self.TICK):
             self.globalTick = self.globalTick + 1
             # increase linearly every tick, and grow network structure.
@@ -267,6 +268,12 @@ class trainer:
 
     def feed_interpolated_input(self, x):
         if self.phase == 'trns' and floor(self.resl)>2 and floor(self.resl)<=self.max_resl:
+            # Mirror augmentation.
+            # mask = torch.FloatTensor(x.shape[0], 1, 1, 1)
+            # mask.uniform_()
+            # mask = mask.cuda() if self.use_cuda else mask
+            # mask = mask.expand_as(x)
+            # x = tf.where(mask < 0.5, x, tf.reverse(x, axis=[3]))
             alpha = self.complete['gen']/100.0
             transform = transforms.Compose( [   transforms.ToPILImage(),
                                                 transforms.Resize(size=int(pow(2,floor(self.resl)-1)), interpolation=Image.BILINEAR),      # 0: nearest
@@ -359,9 +366,9 @@ class trainer:
                 if step > self.max_resl:
                     start_tick = 0
             print('Start from tick', start_tick, 'till', total_tick)
-            for iter in tqdm(range(int(start_tick) * self.TICK, (total_tick)*self.TICK, self.loader.batchsize)):
-                self.globalIter = self.globalIter+1
-                self.stack = self.stack + self.loader.batchsize
+            for iter in tqdm(range(int(start_tick) * self.TICK, (total_tick)*self.TICK, self.loader.batchsize*self.minibatch_repeat)):
+                self.globalIter = self.globalIter+self.minibatch_repeat
+                self.stack = self.stack + self.loader.batchsize*self.minibatch_repeat
                 if self.stack > ceil(len(self.loader.dataset)):
                     self.epoch = self.epoch + 1
                     self.stack = int(self.stack%(ceil(len(self.loader.dataset))))
@@ -369,49 +376,50 @@ class trainer:
                 # reslolution scheduler.
                 self.resl_scheduler()
                 
-                # zero gradients.
-                self.G.zero_grad()
-                self.D.zero_grad()
+                for _ in range(self.minibatch_repeat):
+                    # zero gradients.
+                    self.G.zero_grad()
+                    self.D.zero_grad()
 
-                # update discriminator.
-                batch = self.loader.get_batch()
-                self.x.data = self.feed_interpolated_input(batch)
-                if self.flag_add_noise:
-                    self.x = self.add_noise(self.x)
-                self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
-                self.x_tilde = self.G(self.z)
-               
-                self.fx = self.D(self.x)
-                self.fx_tilde = self.D(self.x_tilde.detach())
-                real_score = torch.mean(self.fx)
-                fake_score = torch.mean(self.fx_tilde)
-                if self.flag_wgan:
-                    loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
-                    loss_d_fake = self.fx_tilde
-                    gp, mixed_score, mixed_norm = self.calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
-                    loss_d = torch.mean(loss_d_real + loss_d_fake + gp)
-                else:
-                    loss_d = self.mse(self.fx, self.real_label) + self.mse(self.fx_tilde, self.fake_label)
+                    # update discriminator.
+                    batch = self.loader.get_batch()
+                    self.x.data = self.feed_interpolated_input(batch)
+                    if self.flag_add_noise:
+                        self.x = self.add_noise(self.x)
+                    self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
+                    self.x_tilde = self.G(self.z)
+                   
+                    self.fx = self.D(self.x)
+                    self.fx_tilde = self.D(self.x_tilde.detach())
+                    real_score = torch.mean(self.fx)
+                    fake_score = torch.mean(self.fx_tilde)
+                    if self.flag_wgan:
+                        loss_d_real = -self.fx + self.fx ** 2 * self.eps_drift
+                        loss_d_fake = self.fx_tilde
+                        gp, mixed_score, mixed_norm = self.calc_gradient_penalty(self.x, self.x_tilde.detach(), 10.)
+                        loss_d = torch.mean(loss_d_real + loss_d_fake + gp)
+                    else:
+                        loss_d = self.mse(self.fx, self.real_label) + self.mse(self.fx_tilde, self.fake_label)
 
-                loss_d.backward()
-                self.opt_d.step()
+                    loss_d.backward()
+                    self.opt_d.step()
 
-                net.soft_copy_param(self.Gs, self.G, 1-self.config.smoothing)
+                    net.soft_copy_param(self.Gs, self.G, 1-self.config.smoothing)
 
-                # update generator.
-                self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
-                self.x_tilde = self.G(self.z)
-                fx_tilde = self.D(self.x_tilde)
-                if self.flag_wgan:
-                    loss_g = -torch.mean(fx_tilde)
-                else:
-                    loss_g = self.mse(fx_tilde, self.real_label.detach())
-                loss_g.backward()
-                self.opt_g.step()
-                # logging.
-                log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | mixed_score: {14:.4f} | mixed_norm: {15:.4f}| [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(
-                    self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0], mixed_score.data[0], mixed_norm.data[0])
-                tqdm.write(log_msg)
+                    # update generator.
+                    self.z.data.resize_(self.loader.batchsize, self.nz).normal_(0.0, 1.0)
+                    self.x_tilde = self.G(self.z)
+                    fx_tilde = self.D(self.x_tilde)
+                    if self.flag_wgan:
+                        loss_g = -torch.mean(fx_tilde)
+                    else:
+                        loss_g = self.mse(fx_tilde, self.real_label.detach())
+                    loss_g.backward()
+                    self.opt_g.step()
+                    # logging.
+                    log_msg = ' [E:{0}][T:{1}][{2:6}/{3:6}]  errD: {4:.4f} | errG: {5:.4f} | real_score: {12:.4f} | fake_score: {13:.4f} | mixed_score: {14:.4f} | mixed_norm: {15:.4f}| [lr:{11:.5f}][cur:{6:.3f}][resl:{7:4}][{8}][{9:.1f}%][{10:.1f}%]'.format(
+                        self.epoch, self.globalTick, self.stack, len(self.loader.dataset), loss_d.data[0], loss_g.data[0], self.resl, int(pow(2,floor(self.resl))), self.phase, self.complete['gen'], self.complete['dis'], self.lr, real_score.data[0], fake_score.data[0], mixed_score.data[0], mixed_norm.data[0])
+                    tqdm.write(log_msg)
 
                 # save model.
                 self.snapshot('repo/model')
