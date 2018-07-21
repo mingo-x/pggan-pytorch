@@ -243,7 +243,7 @@ class trainer:
             self.x_tilde = self.x.cuda()
             self.real_label = self.real_label.cuda()
             self.fake_label = self.fake_label.cuda()
-            torch.cuda.manual_seed(int(time.time()))
+            # torch.cuda.manual_seed(int(time.time()))
 
         # wrapping autograd Variable.
         self.x = Variable(self.x)
