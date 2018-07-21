@@ -319,9 +319,9 @@ class trainer:
         interpolates = self.mul_rowwise(real_data.data, 1-alpha) + self.mul_rowwise(fake_data.data, alpha)
 
         # Upscale
-        scale = 2 ** self.max_resl / real_data.size(2)
+        scale = int(2 ** self.max_resl / real_data.size(2))
         interpolates = interpolates.view(data_shape[0], data_shape[1], data_shape[2], 1, data_shape[3], 1)
-        interpolates = interpolates.expand((1, 1, 1, scale, 1, scale))
+        interpolates = interpolates.expand((-1, -1, -1, scale, -1, scale))
         interpolates = interpolates.view(data_shape)
 
         if self.use_cuda:
