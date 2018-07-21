@@ -311,19 +311,32 @@ class trainer:
         return (a.view(s[0], -1) * b).view(s)
 
     def calc_gradient_penalty(self, real_data, fake_data, iwass_lambda):
+        data_shape = real_data.size
         alpha = torch.FloatTensor(real_data.size(0), 1)
         alpha.uniform_()
         alpha = alpha.cuda() if self.use_cuda else alpha
 
         interpolates = self.mul_rowwise(real_data.data, 1-alpha) + self.mul_rowwise(fake_data.data, alpha)
 
+        # Upscale
+        scale = 2 ** self.max_resl / real_data.size(2)
+        interpolates = interpolates.view(data_shape[0], data_shape[1], data_shape[2], 1, data_shape[3], 1)
+        interpolates = interpolates.expand((1, 1, 1, scale, 1, scale))
+        interpolates = interpolates.view(data_shape)
+
         if self.use_cuda:
             interpolates = interpolates.cuda()
         interpolates = Variable(interpolates, requires_grad=True)
 
-        disc_interpolates = self.D(interpolates)
+        # Downscale
+        d_interpolates = interpolates.view(data_shape[0], data_shape[1], data_shape[2], scale, data_shape[3], scale)
+        d_interpolates = torch.mean(torch.mean(d_interpolates, axis=5), axis=3)
+
+        disc_interpolates = self.D(d_interpolates)
         mixed_loss = torch.sum(disc_interpolates)
 
+        print("in shape", interpolates.shape)
+        print("d shape", d_interpolates.shape)
         # gradients = grad(outputs=disc_interpolates, inputs=interpolates,
         #     grad_outputs=torch.ones(disc_interpolates.size()).cuda() if self.use_cuda else torch.ones(
         #         disc_interpolates.size()), create_graph=True, retain_graph=True, only_inputs=True)[0]
@@ -493,13 +506,13 @@ class trainer:
         if self.globalTick != 0 and self.globalTick%50==0:
             if self.phase == 'stab' or self.phase == 'final' or self.phase == 'init':
                 save_path = os.path.join(path, ndis)
-                if not os.path.exists(save_path):
-                    torch.save(self.get_state('dis'), save_path)
-                    save_path = os.path.join(path, ngen)
-                    torch.save(self.get_state('gen'), save_path)
-                    save_path = os.path.join(path, ngs)
-                    torch.save(self.get_state('gs'), save_path)
-                    print('[snapshot] model saved @ {}'.format(path))
+                # if not os.path.exists(save_path):
+                torch.save(self.get_state('dis'), save_path)
+                save_path = os.path.join(path, ngen)
+                torch.save(self.get_state('gen'), save_path)
+                save_path = os.path.join(path, ngs)
+                torch.save(self.get_state('gs'), save_path)
+                print('[snapshot] model saved @ {}'.format(path))
 
 
 ## perform training.
