@@ -87,7 +87,7 @@ class trainer:
                 self.G.module.grow_network(resl)
                 self.Gs.module.grow_network(resl)
                 self.D.module.grow_network(resl)
-                if resl <= restore_resl:
+                if resl < restore_resl:
                     self.G.module.flush_network()
                     self.Gs.module.flush_network()
                     self.D.module.flush_network()
@@ -110,7 +110,7 @@ class trainer:
             self.G.module.flush_network()
             self.Gs.module.flush_network()
             self.D.module.flush_network()
-            
+
             self.globalIter = floor(self.globalTick * self.TICK / self.loader.batchsize)
             gen_ckpt = torch.load(self.gen_ckpt)
             gs_ckpt = torch.load(self.gs_ckpt)
