@@ -140,8 +140,8 @@ class Generator(nn.Module):
             print 'growing network[{0}x{0} to {1}x{1}]. It may take few seconds...'.format(int(pow(2,resl-1)), int(pow(2,resl)))
             low_resl_to_rgb = deepcopy_module(self.model, 'to_rgb_block')
             prev_block = nn.Sequential()
-            prev_block.add_module('low_resl_upsample', nn.Upsample(scale_factor=2, mode='nearest'))
             prev_block.add_module('low_resl_to_rgb', low_resl_to_rgb)
+            prev_block.add_module('low_resl_upsample', nn.Upsample(scale_factor=2, mode='nearest'))
 
             inter_block, ndim, self.layer_name = self.intermediate_block(resl)
             next_block = nn.Sequential()
