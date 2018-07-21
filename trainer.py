@@ -311,7 +311,7 @@ class trainer:
         return (a.view(s[0], -1) * b).view(s)
 
     def calc_gradient_penalty(self, real_data, fake_data, iwass_lambda):
-        data_shape = real_data.size
+        data_shape = real_data.size()
         alpha = torch.FloatTensor(real_data.size(0), 1)
         alpha.uniform_()
         alpha = alpha.cuda() if self.use_cuda else alpha
