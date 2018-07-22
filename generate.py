@@ -6,7 +6,7 @@ import utils as utils
 
 
 use_cuda = True
-checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/gs_R2_T600.pth.tar'
+checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/gs_R6_T5250.pth.tar'
 n_intp = 50
 max_resl = 2
 
