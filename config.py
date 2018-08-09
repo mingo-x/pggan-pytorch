@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser('PGGAN')
 parser.add_argument('--train_data_root', type=str, default='/srv/glusterfs/xieya/data')
 parser.add_argument('--random_seed', type=int, default=int(time.time()))
 parser.add_argument('--n_gpu', type=int, default=1)             # for Multi-GPU training.
-parser.add_argument('--gen_ckpt', type=str, default='/srv/glusterfs/xieya/pytorch/repo/model/gen_R5_T4150.pth.tar')
+parser.add_argument('--gen_ckpt', type=str, default='')
 parser.add_argument('--gs_ckpt', type=str, default='/srv/glusterfs/xieya/pytorch/repo/model/gs_R5_T4150.pth.tar')
 parser.add_argument('--dis_ckpt', type=str, default='/srv/glusterfs/xieya/pytorch/repo/model/dis_R5_T4150.pth.tar')  
 

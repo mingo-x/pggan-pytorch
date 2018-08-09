@@ -3,14 +3,15 @@ import torch
 from config import config
 from torch.autograd import Variable
 import utils as utils
+import time
 
 
 use_cuda = True
-checkpoint_path = '/srv/glusterfs/xieya/pytorch/repo/model/gs_R2_T600.pth.tar'
+checkpoint_path = '/srv/glusterfs/xieya/test/repo/model/gs_R6_T5850.pth.tar'
 n_intp = 50
-max_resl = 2
+max_resl = 6
 
-torch.manual_seed(1000)
+torch.manual_seed(int(time.time()))
 
 # load trained model.
 import network as net
